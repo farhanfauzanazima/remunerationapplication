@@ -12,6 +12,14 @@ class RoleMiddleware
         $userRole = session('user.role');
 
         if (!$userRole || !in_array($userRole, $roles)) {
+            // Jika request AJAX
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Forbidden. Anda tidak memiliki akses.',
+                ], 403);
+            }
+
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
