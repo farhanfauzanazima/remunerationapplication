@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -39,8 +40,18 @@ Route::middleware('auth.api')->group(function () {
         Route::delete('/categories/{id}',   [CategoryController::class, 'destroy'])->name('categories.destroy');
     });
 
+    // Karyawan — Owner & Head
+    Route::middleware('role:owner,head')->group(function () {
+        Route::get('/employees',                      [EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('/employees/create',               [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/employees',                     [EmployeeController::class, 'store'])->name('employees.store');
+        Route::get('/employees/{id}/edit',            [EmployeeController::class, 'edit'])->name('employees.edit');
+        Route::put('/employees/{id}',                 [EmployeeController::class, 'update'])->name('employees.update');
+        Route::delete('/employees/{id}',              [EmployeeController::class, 'destroy'])->name('employees.destroy');
+        Route::get('/employees/{id}/salary-history',  [EmployeeController::class, 'salaryHistory'])->name('employees.salary-history');
+    });
+
     // Placeholder
-    Route::get('/employees',     fn() => view('coming-soon'))->name('employees.index');
     Route::get('/periods',       fn() => view('coming-soon'))->name('periods.index');
     Route::get('/salary-slips',  fn() => view('coming-soon'))->name('salary-slips.index');
     Route::get('/emails',        fn() => view('coming-soon'))->name('emails.index');
