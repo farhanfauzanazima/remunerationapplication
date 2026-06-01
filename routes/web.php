@@ -1,10 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
-// ─── Redirect root ────────────────────────────────────────
 Route::get('/', function () {
     if (session('api_token') && session('user')) {
         return redirect()->route('dashboard');
@@ -12,19 +12,16 @@ Route::get('/', function () {
     return redirect()->route('auth.login');
 });
 
-// ─── Auth Routes ──────────────────────────────────────────
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('auth.login');
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login.post');
 
-// ─── Logout ───────────────────────────────────────────────
 Route::post('/logout', [AuthController::class, 'logout'])
     ->name('auth.logout')
     ->middleware('auth.api');
 
-// ─── Protected Routes ─────────────────────────────────────
 Route::middleware('auth.api')->group(function () {
 
-    // Dashboard — redirect otomatis sesuai role
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile
@@ -32,8 +29,17 @@ Route::middleware('auth.api')->group(function () {
     Route::put('/profile',          [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
+    // Kategori Gaji — Owner only
+    Route::middleware('role:owner')->group(function () {
+        Route::get('/categories',           [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('/categories/create',    [CategoryController::class, 'create'])->name('categories.create');
+        Route::post('/categories',          [CategoryController::class, 'store'])->name('categories.store');
+        Route::get('/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('/categories/{id}',      [CategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{id}',   [CategoryController::class, 'destroy'])->name('categories.destroy');
+    });
+
     // Placeholder
-    Route::get('/categories',    fn() => view('coming-soon'))->name('categories.index');
     Route::get('/employees',     fn() => view('coming-soon'))->name('employees.index');
     Route::get('/periods',       fn() => view('coming-soon'))->name('periods.index');
     Route::get('/salary-slips',  fn() => view('coming-soon'))->name('salary-slips.index');
