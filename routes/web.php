@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PeriodController;
+use App\Http\Controllers\SalarySlipController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,15 +24,13 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 Route::middleware('auth.api')->group(function () {
 
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Profile
     Route::get('/profile',          [AuthController::class, 'profile'])->name('profile.index');
     Route::put('/profile',          [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
-    // Kategori Gaji — Owner only
+    // Kategori — Owner only
     Route::middleware('role:owner')->group(function () {
         Route::get('/categories',           [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create',    [CategoryController::class, 'create'])->name('categories.create');
@@ -52,22 +51,40 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/employees/{id}/salary-history', [EmployeeController::class, 'salaryHistory'])->name('employees.salary-history');
     });
 
-    // Periode Penggajian — Owner & Head
+    // Periode — Owner & Head
     Route::middleware('role:owner,head')->group(function () {
-        Route::get('/periods',              [PeriodController::class, 'index'])->name('periods.index');
-        Route::get('/periods/create',       [PeriodController::class, 'create'])->name('periods.create');
-        Route::post('/periods',             [PeriodController::class, 'store'])->name('periods.store');
-        Route::get('/periods/{id}/edit',    [PeriodController::class, 'edit'])->name('periods.edit');
-        Route::put('/periods/{id}',         [PeriodController::class, 'update'])->name('periods.update');
-        Route::delete('/periods/{id}',      [PeriodController::class, 'destroy'])->name('periods.destroy');
-        Route::put('/periods/{id}/close',   [PeriodController::class, 'close'])->name('periods.close');
-        Route::put('/periods/{id}/reopen',  [PeriodController::class, 'reopen'])->name('periods.reopen');
+        Route::get('/periods',             [PeriodController::class, 'index'])->name('periods.index');
+        Route::get('/periods/create',      [PeriodController::class, 'create'])->name('periods.create');
+        Route::post('/periods',            [PeriodController::class, 'store'])->name('periods.store');
+        Route::get('/periods/{id}/edit',   [PeriodController::class, 'edit'])->name('periods.edit');
+        Route::put('/periods/{id}',        [PeriodController::class, 'update'])->name('periods.update');
+        Route::delete('/periods/{id}',     [PeriodController::class, 'destroy'])->name('periods.destroy');
+        Route::put('/periods/{id}/close',  [PeriodController::class, 'close'])->name('periods.close');
+        Route::put('/periods/{id}/reopen', [PeriodController::class, 'reopen'])->name('periods.reopen');
+    });
+
+    // Slip Gaji — Semua role
+    Route::middleware('role:owner,head,admin')->group(function () {
+        Route::get('/salary-slips',                [SalarySlipController::class, 'index'])->name('salary-slips.index');
+        Route::get('/salary-slips/create',         [SalarySlipController::class, 'create'])->name('salary-slips.create');
+        Route::post('/salary-slips',               [SalarySlipController::class, 'store'])->name('salary-slips.store');
+        Route::get('/salary-slips/bulk-create',    [SalarySlipController::class, 'bulkCreate'])->name('salary-slips.bulk-create');
+        Route::post('/salary-slips/bulk-generate', [SalarySlipController::class, 'bulkStore'])->name('salary-slips.bulk-generate');
+        Route::get('/salary-slips/{id}',           [SalarySlipController::class, 'show'])->name('salary-slips.show');
+        Route::get('/salary-slips/{id}/edit',      [SalarySlipController::class, 'edit'])->name('salary-slips.edit');
+        Route::put('/salary-slips/{id}',           [SalarySlipController::class, 'update'])->name('salary-slips.update');
+        Route::delete('/salary-slips/{id}',        [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy');
     });
 
     // Placeholder
-    Route::get('/salary-slips',  fn() => view('coming-soon'))->name('salary-slips.index');
     Route::get('/emails',        fn() => view('coming-soon'))->name('emails.index');
     Route::get('/reports',       fn() => view('coming-soon'))->name('reports.index');
     Route::get('/activity-logs', fn() => view('coming-soon'))->name('activity-logs.index');
 
+    // PDF routes (akan diisi di Sesi 8)
+    Route::get('/salary-slips/{id}/preview-pdf',  fn($id) => back()->with('info', 'Fitur PDF akan tersedia segera.'))->name('salary-slips.preview-pdf');
+    Route::get('/salary-slips/{id}/download-pdf', fn($id) => back()->with('info', 'Fitur PDF akan tersedia segera.'))->name('salary-slips.download-pdf');
+
+    // Email placeholder (akan diisi di Sesi 9)
+    Route::get('/emails/send/{id}', fn($id) => back()->with('info', 'Fitur email akan tersedia segera.'))->name('emails.send');
 });
