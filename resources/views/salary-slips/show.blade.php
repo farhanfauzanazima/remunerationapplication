@@ -209,6 +209,11 @@
                             <i class="bi bi-envelope-fill me-2"></i>Kirim Email
                         </a>
 
+                        {{-- Riwayat Email --}}
+                        <a href="{{ route('emails.slip-history', $slip['id']) }}" class="btn btn-outline-secondary fw-600">
+                            <i class="bi bi-clock-history me-2"></i>Riwayat Email
+                        </a>
+
                     </div>
 
                 </div>

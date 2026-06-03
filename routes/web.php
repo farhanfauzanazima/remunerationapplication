@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\PeriodController;
@@ -76,26 +77,28 @@ Route::middleware('auth.api')->group(function () {
         Route::put('/salary-slips/{id}',           [SalarySlipController::class, 'update'])->name('salary-slips.update');
         Route::delete('/salary-slips/{id}',        [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy');
 
-        // ─── PDF Routes ───────────────────────────────────────
+        // PDF
         Route::get('/salary-slips/{id}/preview-pdf',   [PdfController::class, 'preview'])->name('salary-slips.preview-pdf');
         Route::get('/salary-slips/{id}/download-pdf',  [PdfController::class, 'download'])->name('salary-slips.download-pdf');
         Route::post('/salary-slips/{id}/generate-pdf', [PdfController::class, 'generate'])->name('salary-slips.generate-pdf');
-        Route::post('/pdf/bulk-generate',              [PdfController::class, 'bulkGenerate'])->name('pdf.bulk-generate');
-        Route::get('/pdf/bulk-generate', function () {
+        Route::get('/pdf/bulk-generate',               function () {
             $periods = app(\App\Services\ApiService::class)->get('/payroll-periods')['data'] ?? [];
             return view('salary-slips.bulk-pdf', compact('periods'));
         })->name('pdf.bulk-generate.page');
+        Route::post('/pdf/bulk-generate', [PdfController::class, 'bulkGenerate'])->name('pdf.bulk-generate');
+
+        // Email
+        Route::get('/emails',                     [EmailController::class, 'index'])->name('emails.index');
+        Route::get('/emails/send-bulk',           [EmailController::class, 'showSendBulk'])->name('emails.send-bulk');
+        Route::post('/emails/send-bulk',          [EmailController::class, 'sendBulk'])->name('emails.send-bulk.post');
+        Route::get('/emails/send/{slipId}',       [EmailController::class, 'showSend'])->name('emails.send');
+        Route::post('/emails/send/{slipId}',      [EmailController::class, 'send'])->name('emails.send.post');
+        Route::post('/emails/resend/{slipId}',    [EmailController::class, 'resend'])->name('emails.resend');
+        Route::get('/emails/history/{slipId}',    [EmailController::class, 'slipHistory'])->name('emails.slip-history');
     });
 
     // Placeholder
-    Route::get('/emails',        fn() => view('coming-soon'))->name('emails.index');
     Route::get('/reports',       fn() => view('coming-soon'))->name('reports.index');
     Route::get('/activity-logs', fn() => view('coming-soon'))->name('activity-logs.index');
 
-    // Email send placeholder (akan diisi Sesi 9)
-    Route::get(
-        '/emails/send/{id}',
-        fn($id) => back()
-            ->with('info', 'Fitur email akan tersedia di sesi berikutnya.')
-    )->name('emails.send');
 });
