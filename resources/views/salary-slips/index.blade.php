@@ -6,6 +6,7 @@
 
 @section('content')
 
+{{-- Page Header --}}
 <div class="page-header">
     <div class="page-header-left">
         <nav aria-label="breadcrumb">
@@ -19,7 +20,21 @@
         <h1>Slip Gaji</h1>
         <p>Total {{ count($slips) }} slip ditemukan</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        {{-- Bulk Generate PDF --}}
+        @if(request('period_id') && count($slips) > 0)
+        <form action="{{ route('pdf.bulk-generate') }}" method="POST" style="display:inline;">
+            @csrf
+            <input type="hidden" name="period_id" value="{{ request('period_id') }}">
+            <button type="submit"
+                    class="btn btn-danger fw-600"
+                    onclick="return confirm('Generate PDF untuk semua {{ count($slips) }} slip di periode ini?')">
+                <i class="bi bi-file-pdf me-2"></i>
+                Generate Semua PDF
+            </button>
+        </form>
+        @endif
+
         <a href="{{ route('salary-slips.bulk-create') }}"
            class="btn btn-outline-secondary fw-600">
             <i class="bi bi-people-fill me-2"></i>Input Massal
@@ -196,6 +211,7 @@
                         </td>
                         <td>{!! statusBadge($slip['status']) !!}</td>
                         <td>
+                        
                             <div class="d-flex gap-1 justify-content-center">
                                 <a href="{{ route('salary-slips.show', $slip['id']) }}"
                                    class="btn-action view"

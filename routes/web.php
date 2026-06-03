@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PdfController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\SalarySlipController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,16 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/salary-slips/{id}/edit',      [SalarySlipController::class, 'edit'])->name('salary-slips.edit');
         Route::put('/salary-slips/{id}',           [SalarySlipController::class, 'update'])->name('salary-slips.update');
         Route::delete('/salary-slips/{id}',        [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy');
+
+        // ─── PDF Routes ───────────────────────────────────────
+        Route::get('/salary-slips/{id}/preview-pdf',   [PdfController::class, 'preview'])->name('salary-slips.preview-pdf');
+        Route::get('/salary-slips/{id}/download-pdf',  [PdfController::class, 'download'])->name('salary-slips.download-pdf');
+        Route::post('/salary-slips/{id}/generate-pdf', [PdfController::class, 'generate'])->name('salary-slips.generate-pdf');
+        Route::post('/pdf/bulk-generate',              [PdfController::class, 'bulkGenerate'])->name('pdf.bulk-generate');
+        Route::get('/pdf/bulk-generate', function () {
+            $periods = app(\App\Services\ApiService::class)->get('/payroll-periods')['data'] ?? [];
+            return view('salary-slips.bulk-pdf', compact('periods'));
+        })->name('pdf.bulk-generate.page');
     });
 
     // Placeholder
@@ -81,10 +92,10 @@ Route::middleware('auth.api')->group(function () {
     Route::get('/reports',       fn() => view('coming-soon'))->name('reports.index');
     Route::get('/activity-logs', fn() => view('coming-soon'))->name('activity-logs.index');
 
-    // PDF routes (akan diisi di Sesi 8)
-    Route::get('/salary-slips/{id}/preview-pdf',  fn($id) => back()->with('info', 'Fitur PDF akan tersedia segera.'))->name('salary-slips.preview-pdf');
-    Route::get('/salary-slips/{id}/download-pdf', fn($id) => back()->with('info', 'Fitur PDF akan tersedia segera.'))->name('salary-slips.download-pdf');
-
-    // Email placeholder (akan diisi di Sesi 9)
-    Route::get('/emails/send/{id}', fn($id) => back()->with('info', 'Fitur email akan tersedia segera.'))->name('emails.send');
+    // Email send placeholder (akan diisi Sesi 9)
+    Route::get(
+        '/emails/send/{id}',
+        fn($id) => back()
+            ->with('info', 'Fitur email akan tersedia di sesi berikutnya.')
+    )->name('emails.send');
 });

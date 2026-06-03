@@ -118,18 +118,21 @@ class ApiService
         }
     }
 
-    // ─── Stream file (Preview PDF) ────────────────────────
+    // ─── Stream file (Preview PDF inline) ────────────────────
     public function stream(string $endpoint): ?\Illuminate\Http\Response
     {
         try {
             $response = Http::timeout(60)
                 ->withToken($this->getToken())
+                ->withHeaders(['Accept' => 'application/pdf'])
                 ->get($this->baseUrl . $endpoint);
 
             if ($response->successful()) {
                 return response($response->body(), 200, [
-                    'Content-Type'        => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="preview.pdf"',
+                    'Content-Type'              => 'application/pdf',
+                    'Content-Disposition'       => 'inline; filename="preview.pdf"',
+                    'Cache-Control'             => 'no-cache, no-store',
+                    'X-Content-Type-Options'    => 'nosniff',
                 ]);
             }
 
@@ -138,6 +141,7 @@ class ApiService
             return null;
         }
     }
+
 
     // ─── Handle response ──────────────────────────────────
     private function handleResponse(Response $response): array
