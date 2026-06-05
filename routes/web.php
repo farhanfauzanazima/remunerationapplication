@@ -7,6 +7,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\PeriodController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalarySlipController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,7 +33,7 @@ Route::middleware('auth.api')->group(function () {
     Route::put('/profile',          [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
-    // Kategori — Owner only
+    // Kategori — Owner
     Route::middleware('role:owner')->group(function () {
         Route::get('/categories',           [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create',    [CategoryController::class, 'create'])->name('categories.create');
@@ -88,17 +89,25 @@ Route::middleware('auth.api')->group(function () {
         Route::post('/pdf/bulk-generate', [PdfController::class, 'bulkGenerate'])->name('pdf.bulk-generate');
 
         // Email
-        Route::get('/emails',                     [EmailController::class, 'index'])->name('emails.index');
-        Route::get('/emails/send-bulk',           [EmailController::class, 'showSendBulk'])->name('emails.send-bulk');
-        Route::post('/emails/send-bulk',          [EmailController::class, 'sendBulk'])->name('emails.send-bulk.post');
-        Route::get('/emails/send/{slipId}',       [EmailController::class, 'showSend'])->name('emails.send');
-        Route::post('/emails/send/{slipId}',      [EmailController::class, 'send'])->name('emails.send.post');
-        Route::post('/emails/resend/{slipId}',    [EmailController::class, 'resend'])->name('emails.resend');
-        Route::get('/emails/history/{slipId}',    [EmailController::class, 'slipHistory'])->name('emails.slip-history');
+        Route::get('/emails',                  [EmailController::class, 'index'])->name('emails.index');
+        Route::get('/emails/send-bulk',        [EmailController::class, 'showSendBulk'])->name('emails.send-bulk');
+        Route::post('/emails/send-bulk',       [EmailController::class, 'sendBulk'])->name('emails.send-bulk.post');
+        Route::get('/emails/send/{slipId}',    [EmailController::class, 'showSend'])->name('emails.send');
+        Route::post('/emails/send/{slipId}',   [EmailController::class, 'send'])->name('emails.send.post');
+        Route::post('/emails/resend/{slipId}', [EmailController::class, 'resend'])->name('emails.resend');
+        Route::get('/emails/history/{slipId}', [EmailController::class, 'slipHistory'])->name('emails.slip-history');
+    });
+
+    // Laporan — Owner & Head
+    Route::middleware('role:owner,head')->group(function () {
+        Route::get('/reports',                      [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/salary-summary',       [ReportController::class, 'salarySummary'])->name('reports.salary-summary');
+        Route::get('/reports/export-pdf',           [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+        Route::get('/reports/statistics',           [ReportController::class, 'statistics'])->name('reports.statistics');
+        Route::get('/reports/employee/{id}',        [ReportController::class, 'employeeReport'])->name('reports.employee');
     });
 
     // Placeholder
-    Route::get('/reports',       fn() => view('coming-soon'))->name('reports.index');
     Route::get('/activity-logs', fn() => view('coming-soon'))->name('activity-logs.index');
 
 });
