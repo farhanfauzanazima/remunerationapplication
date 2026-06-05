@@ -6,26 +6,27 @@
 
 @section('content')
 
-{{-- Page Header --}}
 <div class="page-header">
     <div class="page-header-left">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item">
+                    <a href="{{ route('dashboard') }}">Dashboard</a>
+                </li>
                 <li class="breadcrumb-item active">Profil Saya</li>
             </ol>
         </nav>
         <h1>Profil Saya</h1>
-        <p>Kelola informasi akun dan keamanan Anda</p>
+        <p>Kelola informasi akun dan keamanan</p>
     </div>
 </div>
 
 <div class="row g-4">
 
-    {{-- Info Profil --}}
+    {{-- Kartu Profil --}}
     <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center py-4">
+        <div class="card text-center">
+            <div class="card-body py-4">
                 <div style="width:80px;height:80px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#212529;margin:0 auto 16px;">
                     {{ strtoupper(substr(session('user.name', 'U'), 0, 1)) }}
                 </div>
@@ -34,12 +35,42 @@
                 <span class="badge-custom badge-{{ session('user.role') }}">
                     {{ ucfirst(session('user.role')) }}
                 </span>
+                @if(session('user.phone'))
+                <div class="mt-3 fs-13 text-muted">
+                    <i class="bi bi-phone me-1"></i>{{ session('user.phone') }}
+                </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Info Sistem --}}
+        <div class="card mt-4">
+            <div class="card-header">
+                <div class="card-header-title">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Info Sistem
+                </div>
+            </div>
+            <div class="card-body">
+                @php $info = [
+                    ['Versi Aplikasi', '1.0.0'],
+                    ['Framework',      'Laravel 12.x'],
+                    ['Session',        'Aktif'],
+                ]; @endphp
+                @foreach($info as [$label, $value])
+                <div class="d-flex justify-content-between py-2 fs-13"
+                     style="border-bottom:1px solid #F0F0F0;">
+                    <span class="text-muted">{{ $label }}</span>
+                    <span class="fw-600">{{ $value }}</span>
+                </div>
+                @endforeach
             </div>
         </div>
     </div>
 
-    {{-- Form Update Profil --}}
     <div class="col-md-8">
+
+        {{-- Update Profil --}}
         <div class="card mb-4">
             <div class="card-header">
                 <div class="card-header-title">
@@ -94,11 +125,16 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Nomor Telepon</label>
-                            <input type="text"
-                                   name="phone"
-                                   class="form-control"
-                                   value="{{ old('phone', $user['phone'] ?? session('user.phone')) }}"
-                                   placeholder="08xxxxxxxxxx">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-phone"></i>
+                                </span>
+                                <input type="text"
+                                       name="phone"
+                                       class="form-control"
+                                       value="{{ old('phone', $user['phone'] ?? session('user.phone')) }}"
+                                       placeholder="08xxxxxxxxxx">
+                            </div>
                         </div>
 
                         <div class="col-md-6">
@@ -107,6 +143,7 @@
                                    class="form-control"
                                    value="{{ ucfirst(session('user.role')) }}"
                                    disabled>
+                            <div class="form-text">Role tidak dapat diubah</div>
                         </div>
                     </div>
 
@@ -119,7 +156,7 @@
             </div>
         </div>
 
-        {{-- Form Ganti Password --}}
+        {{-- Ganti Password --}}
         <div class="card">
             <div class="card-header">
                 <div class="card-header-title">
@@ -128,16 +165,22 @@
                 </div>
             </div>
             <div class="card-body">
+
+                <div class="alert-custom alert-warning mb-3">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Setelah mengganti password, Anda akan otomatis logout dan harus login ulang.
+                </div>
+
                 <form action="{{ route('profile.change-password') }}" method="POST">
                     @csrf
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label">Password Lama</label>
+                            <label class="form-label">Password Saat Ini</label>
                             <input type="password"
                                    name="current_password"
                                    class="form-control @error('current_password') is-invalid @enderror"
-                                   placeholder="Password saat ini"
+                                   placeholder="Masukkan password lama"
                                    required>
                             @error('current_password')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -148,6 +191,7 @@
                             <label class="form-label">Password Baru</label>
                             <input type="password"
                                    name="new_password"
+                                   id="newPassword"
                                    class="form-control @error('new_password') is-invalid @enderror"
                                    placeholder="Minimal 6 karakter"
                                    required>
@@ -160,12 +204,15 @@
                             <label class="form-label">Konfirmasi Password Baru</label>
                             <input type="password"
                                    name="new_password_confirmation"
+                                   id="confirmPassword"
                                    class="form-control @error('new_password_confirmation') is-invalid @enderror"
                                    placeholder="Ulangi password baru"
-                                   required>
+                                   required
+                                   oninput="checkPasswordMatch()">
                             @error('new_password_confirmation')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <div id="matchMsg" class="form-text"></div>
                         </div>
                     </div>
 
@@ -182,3 +229,26 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+function checkPasswordMatch() {
+    const newPwd     = document.getElementById('newPassword').value;
+    const confirmPwd = document.getElementById('confirmPassword').value;
+    const msg        = document.getElementById('matchMsg');
+
+    if (confirmPwd.length === 0) {
+        msg.textContent = '';
+        return;
+    }
+
+    if (newPwd === confirmPwd) {
+        msg.textContent = '✓ Password cocok';
+        msg.style.color = '#198754';
+    } else {
+        msg.textContent = '✗ Password tidak cocok';
+        msg.style.color = '#DC3545';
+    }
+}
+</script>
+@endpush

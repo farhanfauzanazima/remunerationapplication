@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -27,13 +28,15 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 Route::middleware('auth.api')->group(function () {
 
+    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profil & Password — semua role
     Route::get('/profile',          [AuthController::class, 'profile'])->name('profile.index');
     Route::put('/profile',          [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
-    // Kategori — Owner
+    // Kategori Gaji — Owner only
     Route::middleware('role:owner')->group(function () {
         Route::get('/categories',           [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create',    [CategoryController::class, 'create'])->name('categories.create');
@@ -82,7 +85,7 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/salary-slips/{id}/preview-pdf',   [PdfController::class, 'preview'])->name('salary-slips.preview-pdf');
         Route::get('/salary-slips/{id}/download-pdf',  [PdfController::class, 'download'])->name('salary-slips.download-pdf');
         Route::post('/salary-slips/{id}/generate-pdf', [PdfController::class, 'generate'])->name('salary-slips.generate-pdf');
-        Route::get('/pdf/bulk-generate',               function () {
+        Route::get('/pdf/bulk-generate', function () {
             $periods = app(\App\Services\ApiService::class)->get('/payroll-periods')['data'] ?? [];
             return view('salary-slips.bulk-pdf', compact('periods'));
         })->name('pdf.bulk-generate.page');
@@ -100,14 +103,17 @@ Route::middleware('auth.api')->group(function () {
 
     // Laporan — Owner & Head
     Route::middleware('role:owner,head')->group(function () {
-        Route::get('/reports',                      [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/salary-summary',       [ReportController::class, 'salarySummary'])->name('reports.salary-summary');
-        Route::get('/reports/export-pdf',           [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
-        Route::get('/reports/statistics',           [ReportController::class, 'statistics'])->name('reports.statistics');
-        Route::get('/reports/employee/{id}',        [ReportController::class, 'employeeReport'])->name('reports.employee');
+        Route::get('/reports',               [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/salary-summary',[ReportController::class, 'salarySummary'])->name('reports.salary-summary');
+        Route::get('/reports/export-pdf',    [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
+        Route::get('/reports/statistics',    [ReportController::class, 'statistics'])->name('reports.statistics');
+        Route::get('/reports/employee/{id}', [ReportController::class, 'employeeReport'])->name('reports.employee');
     });
 
-    // Placeholder
-    Route::get('/activity-logs', fn() => view('coming-soon'))->name('activity-logs.index');
+    // Activity Log — Owner only
+    Route::middleware('role:owner')->group(function () {
+        Route::get('/activity-logs',      [ActivityLogController::class, 'index'])->name('activity-logs.index');
+        Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+    });
 
 });

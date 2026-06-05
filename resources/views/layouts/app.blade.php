@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,6 +18,7 @@
 
     @stack('styles')
 </head>
+
 <body>
 
     {{-- ─── SIDEBAR ─────────────────────────────────────── --}}
@@ -32,91 +34,90 @@
         </a>
 
         {{-- Navigation --}}
+        {{-- Navigation --}}
         <nav class="sidebar-nav">
 
             {{-- MENU UTAMA --}}
             <div class="sidebar-section-label">Menu Utama</div>
 
             <a href="{{ route('dashboard') }}"
-               class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                 <span class="sidebar-icon"><i class="bi bi-grid-1x2-fill"></i></span>
                 Dashboard
             </a>
 
-            {{-- OWNER MENU --}}
-            @if(session('user.role') === 'owner')
-            <div class="sidebar-section-label">Master Data</div>
+            {{-- OWNER ONLY --}}
+            @if (session('user.role') === 'owner')
+                <div class="sidebar-section-label">Master Data</div>
 
-            <a href="{{ route('categories.index') }}"
-               class="sidebar-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-tags-fill"></i></span>
-                Kategori Gaji
-            </a>
+                <a href="{{ route('categories.index') }}"
+                    class="sidebar-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-tags-fill"></i></span>
+                    Kategori Gaji
+                </a>
             @endif
 
-            {{-- OWNER & HEAD MENU --}}
-            @if(in_array(session('user.role'), ['owner', 'head']))
-            <div class="sidebar-section-label">Penggajian</div>
+            {{-- OWNER & HEAD --}}
+            @if (in_array(session('user.role'), ['owner', 'head']))
+                <div class="sidebar-section-label">Penggajian</div>
 
-            <a href="{{ route('employees.index') }}"
-               class="sidebar-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-people-fill"></i></span>
-                Karyawan
-            </a>
+                <a href="{{ route('employees.index') }}"
+                    class="sidebar-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-people-fill"></i></span>
+                    Karyawan
+                </a>
 
-            <a href="{{ route('periods.index') }}"
-               class="sidebar-item {{ request()->routeIs('periods.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-calendar3"></i></span>
-                Periode Penggajian
-            </a>
+                <a href="{{ route('periods.index') }}"
+                    class="sidebar-item {{ request()->routeIs('periods.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-calendar3"></i></span>
+                    Periode
+                </a>
             @endif
 
-            {{-- ALL ROLES MENU --}}
-            @if(in_array(session('user.role'), ['owner', 'head', 'admin']))
-            @if(session('user.role') === 'admin')
-            <div class="sidebar-section-label">Penggajian</div>
+            {{-- SEMUA ROLE --}}
+            @if (session('user.role') === 'admin')
+                <div class="sidebar-section-label">Penggajian</div>
             @endif
 
             <a href="{{ route('salary-slips.index') }}"
-               class="sidebar-item {{ request()->routeIs('salary-slips.*') ? 'active' : '' }}">
+                class="sidebar-item {{ request()->routeIs('salary-slips.*') ? 'active' : '' }}">
                 <span class="sidebar-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
                 Slip Gaji
             </a>
 
             <a href="{{ route('emails.index') }}"
-               class="sidebar-item {{ request()->routeIs('emails.*') ? 'active' : '' }}">
+                class="sidebar-item {{ request()->routeIs('emails.*') ? 'active' : '' }}">
                 <span class="sidebar-icon"><i class="bi bi-envelope-fill"></i></span>
                 Distribusi Email
             </a>
+
+            {{-- LAPORAN — Owner & Head --}}
+            @if (in_array(session('user.role'), ['owner', 'head']))
+                <div class="sidebar-section-label">Analitik</div>
+
+                <a href="{{ route('reports.index') }}"
+                    class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
+                    Laporan
+                </a>
             @endif
 
-            {{-- REPORTS (OWNER & HEAD) --}}
-            @if(in_array(session('user.role'), ['owner', 'head']))
-            <div class="sidebar-section-label">Laporan</div>
+            {{-- SISTEM — Owner only --}}
+            @if (session('user.role') === 'owner')
+                <div class="sidebar-section-label">Sistem</div>
 
-            <a href="{{ route('reports.index') }}"
-               class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
-                Laporan & Statistik
-            </a>
+                <a href="{{ route('activity-logs.index') }}"
+                    class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-clock-history"></i></span>
+                    Activity Log
+                </a>
             @endif
 
-            {{-- OWNER ONLY --}}
-            @if(session('user.role') === 'owner')
-            <div class="sidebar-section-label">Sistem</div>
-
-            <a href="{{ route('activity-logs.index') }}"
-               class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-clock-history"></i></span>
-                Activity Log
-            </a>
-            @endif
-
-            {{-- PROFILE --}}
+            {{-- AKUN --}}
             <div class="sidebar-section-label">Akun</div>
 
             <a href="{{ route('profile.index') }}"
-               class="sidebar-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                class="sidebar-item {{ request()->routeIs('profile.*') ? 'active' : '' }}">
                 <span class="sidebar-icon"><i class="bi bi-person-fill"></i></span>
                 Profil Saya
             </a>
@@ -168,25 +169,25 @@
 
         {{-- Flash Messages --}}
         <div class="px-4 pt-3">
-            @if(session('success'))
-            <div class="alert-custom alert-success alert-auto-hide">
-                <i class="bi bi-check-circle-fill"></i>
-                {{ session('success') }}
-            </div>
+            @if (session('success'))
+                <div class="alert-custom alert-success alert-auto-hide">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ session('success') }}
+                </div>
             @endif
 
-            @if(session('error'))
-            <div class="alert-custom alert-error alert-auto-hide">
-                <i class="bi bi-exclamation-circle-fill"></i>
-                {{ session('error') }}
-            </div>
+            @if (session('error'))
+                <div class="alert-custom alert-error alert-auto-hide">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    {{ session('error') }}
+                </div>
             @endif
 
-            @if(session('warning'))
-            <div class="alert-custom alert-warning alert-auto-hide">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                {{ session('warning') }}
-            </div>
+            @if (session('warning'))
+                <div class="alert-custom alert-warning alert-auto-hide">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    {{ session('warning') }}
+                </div>
             @endif
         </div>
 
@@ -196,7 +197,8 @@
         </div>
 
         {{-- Footer --}}
-        <footer style="padding: 16px 24px; border-top: 1px solid var(--border); background: var(--white); text-align: center;">
+        <footer
+            style="padding: 16px 24px; border-top: 1px solid var(--border); background: var(--white); text-align: center;">
             <span style="font-size: 13px; color: #6c757d;">
                 &copy; {{ date('Y') }} Sistem Remunerasi Restoran &mdash; Versi 1.0.0
             </span>
@@ -211,4 +213,5 @@
 
     @stack('scripts')
 </body>
+
 </html>
