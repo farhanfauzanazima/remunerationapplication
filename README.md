@@ -156,6 +156,8 @@ php artisan serve --host=0.0.0.0 --port=8080
 ---
 
 ## 📁 Struktur Folder
+
+```
 app/
 ├── Helpers/
 │   └── helpers.php                  ← rupiah(), statusBadge(), roleLabel()
@@ -176,13 +178,16 @@ app/
 │       └── RoleMiddleware.php        ← Proteksi per role
 └── Services/
 └── ApiService.php                    ← HTTP Client ke backend API
+
 config/
 └── api.php                           ← Konfigurasi base URL & timeout API
+
 public/
 ├── css/
 │   └── app.css                       ← Custom stylesheet
 └── js/
 └── app.js                            ← Custom JavaScript
+
 resources/views/
 ├── layouts/
 │   ├── app.blade.php                 ← Layout utama (sidebar + topbar)
@@ -231,8 +236,10 @@ resources/views/
 ├── errors/
 │   └── 403.blade.php
 └── coming-soon.blade.php
+
 routes/
-└── web.php                           ← Semua route web
+└── web.php                            ← Semua route web
+```
 
 ---
 
