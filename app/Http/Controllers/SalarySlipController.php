@@ -32,17 +32,48 @@ class SalarySlipController extends Controller
 
     // GET /salary-slips/create
     public function create(Request $request)
-    {
-        $periods   = $this->api->get('/payroll-periods', ['status' => 'open'])['data'] ?? [];
-        $employees = $this->api->get('/employees', ['status' => 'active'])['data'] ?? [];
-        $categories = $this->api->get('/salary-categories')['data'] ?? [];
+{
+    $periods    = $this->api->get('/payroll-periods', ['status' => 'open'])['data'] ?? [];
+    $categories = $this->api->get('/salary-categories')['data'] ?? [];
+    $employeesRaw = $this->api->get('/employees', ['status' => 'active'])['data'] ?? [];
 
-        $selectedPeriod = $request->period_id;
+    // Buat lookup kategori berdasarkan ID
+    // agar tidak perlu loop berkali-kali
+    $categoryMap = collect($categories)->keyBy('id');
 
-        return view('salary-slips.create', compact(
-            'periods', 'employees', 'categories', 'selectedPeriod'
-        ));
-    }
+    // Gabungkan data kategori lengkap ke setiap karyawan
+    $employees = array_map(function ($emp) use ($categoryMap) {
+        $catId = $emp['category']['id'] ?? ($emp['category_id'] ?? null);
+
+        if ($catId && $categoryMap->has($catId)) {
+            $fullCategory = $categoryMap->get($catId);
+            $emp['category'] = [
+                'id'            => $fullCategory['id'],
+                'category_name' => $fullCategory['category_name'],
+                'base_salary'   => (float) ($fullCategory['base_salary']  ?? 0),
+                'allowance'     => (float) ($fullCategory['allowance']    ?? 0),
+                'late_penalty'  => (float) ($fullCategory['late_penalty'] ?? 0),
+                'overtime_rate' => (float) ($fullCategory['overtime_rate'] ?? 0),
+            ];
+        } else {
+            // Kategori tidak ditemukan — set default 0
+            $emp['category'] = array_merge($emp['category'] ?? [], [
+                'base_salary'   => 0,
+                'allowance'     => 0,
+                'late_penalty'  => 0,
+                'overtime_rate' => 0,
+            ]);
+        }
+
+        return $emp;
+    }, $employeesRaw);
+
+    $selectedPeriod = $request->period_id;
+
+    return view('salary-slips.create', compact(
+        'periods', 'employees', 'categories', 'selectedPeriod'
+    ));
+}
 
     // POST /salary-slips
     public function store(Request $request)
@@ -163,17 +194,46 @@ class SalarySlipController extends Controller
 
     // GET /salary-slips/bulk-create
     public function bulkCreate(Request $request)
-    {
-        $periods    = $this->api->get('/payroll-periods', ['status' => 'open'])['data'] ?? [];
-        $employees  = $this->api->get('/employees', ['status' => 'active'])['data'] ?? [];
-        $categories = $this->api->get('/salary-categories')['data'] ?? [];
+{
+    $periods      = $this->api->get('/payroll-periods', ['status' => 'open'])['data'] ?? [];
+    $categories   = $this->api->get('/salary-categories')['data'] ?? [];
+    $employeesRaw = $this->api->get('/employees', ['status' => 'active'])['data'] ?? [];
 
-        $selectedPeriod = $request->period_id;
+    // Buat lookup kategori berdasarkan ID
+    $categoryMap = collect($categories)->keyBy('id');
 
-        return view('salary-slips.bulk-create', compact(
-            'periods', 'employees', 'categories', 'selectedPeriod'
-        ));
-    }
+    // Gabungkan data kategori lengkap ke setiap karyawan
+    $employees = array_map(function ($emp) use ($categoryMap) {
+        $catId = $emp['category']['id'] ?? ($emp['category_id'] ?? null);
+
+        if ($catId && $categoryMap->has($catId)) {
+            $fullCategory = $categoryMap->get($catId);
+            $emp['category'] = [
+                'id'            => $fullCategory['id'],
+                'category_name' => $fullCategory['category_name'],
+                'base_salary'   => (float) ($fullCategory['base_salary']  ?? 0),
+                'allowance'     => (float) ($fullCategory['allowance']    ?? 0),
+                'late_penalty'  => (float) ($fullCategory['late_penalty'] ?? 0),
+                'overtime_rate' => (float) ($fullCategory['overtime_rate'] ?? 0),
+            ];
+        } else {
+            $emp['category'] = array_merge($emp['category'] ?? [], [
+                'base_salary'   => 0,
+                'allowance'     => 0,
+                'late_penalty'  => 0,
+                'overtime_rate' => 0,
+            ]);
+        }
+
+        return $emp;
+    }, $employeesRaw);
+
+    $selectedPeriod = $request->period_id;
+
+    return view('salary-slips.bulk-create', compact(
+        'periods', 'employees', 'categories', 'selectedPeriod'
+    ));
+}
 
     // POST /salary-slips/bulk-generate
     public function bulkStore(Request $request)
