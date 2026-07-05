@@ -82,16 +82,13 @@ Route::middleware('auth.api')->group(function () {
 
     // ---------- Slip Gaji (Sesi 7 & 8) ----------
     Route::middleware('role:owner,hr')->group(function () {
-        Route::get('/salary-slips',                [SalarySlipController::class, 'index'])->name('salary-slips.index');
-        Route::get('/salary-slips/bulk-create',    [SalarySlipController::class, 'bulkCreate'])->name('salary-slips.bulk-create');
+        Route::get('/salary-slips', [SalarySlipController::class, 'index'])->name('salary-slips.index');
+        Route::get('/salary-slips/bulk-create', [SalarySlipController::class, 'bulkCreate'])->name('salary-slips.bulk-create');
         Route::post('/salary-slips/bulk-generate', [SalarySlipController::class, 'bulkStore'])->name('salary-slips.bulk-generate');
-        Route::get('/salary-slips/{id}',           [SalarySlipController::class, 'show'])->name('salary-slips.show');
-        Route::get('/salary-slips/{id}/edit',      [SalarySlipController::class, 'edit'])->name('salary-slips.edit');
-        Route::put('/salary-slips/{id}',           [SalarySlipController::class, 'update'])->name('salary-slips.update');
-        Route::delete('/salary-slips/{id}',        [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy');
-
-        Route::get('/salary-slips/{id}/preview-pdf',  [PdfController::class, 'preview'])->name('salary-slips.preview-pdf');
-        Route::get('/salary-slips/{id}/download-pdf', [PdfController::class, 'download'])->name('salary-slips.download-pdf');
+        Route::get('/salary-slips/{type}/{id}', [SalarySlipController::class, 'show'])->name('salary-slips.show')->whereIn('type', ['tetap', 'partime']);
+        Route::get('/salary-slips/{type}/{id}/edit', [SalarySlipController::class, 'edit'])->name('salary-slips.edit')->whereIn('type', ['tetap', 'partime']);
+        Route::put('/salary-slips/{type}/{id}', [SalarySlipController::class, 'update'])->name('salary-slips.update')->whereIn('type', ['tetap', 'partime']);
+        Route::delete('/salary-slips/{type}/{id}', [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy')->whereIn('type', ['tetap', 'partime']);
     });
 
     // ---------- Distribusi Gaji — ganti nama dari Email (Sesi 10) ----------

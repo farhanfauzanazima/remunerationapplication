@@ -52,4 +52,71 @@ class SalarySlipController extends Controller
             'branch_id' => $payload['branch_id'],
         ])->with('success', $response['message']);
     }
+
+    public function index(Request $request)
+    {
+        $filters = $request->only(['payroll_period_id', 'employee_search', 'status', 'branch_id', 'tenure']);
+
+        $response = $this->api->get('/salary-slips', array_merge($filters, [
+            'page_tetap' => $request->input('page_tetap', 1),
+            'page_partime' => $request->input('page_partime', 1),
+        ]));
+
+        $periods = $this->api->get('/payroll-periods');
+        $branches = $this->api->get('/branches');
+
+        return view('salary-slips.index', [
+            'tetap' => $response['success'] ? ($response['data']['tetap'] ?? []) : [],
+            'partime' => $response['success'] ? ($response['data']['partime'] ?? []) : [],
+            'pagination' => $response['raw']['pagination'] ?? null,
+            'periods' => $periods['success'] ? $periods['data'] : [],
+            'branches' => $branches['success'] ? $branches['data'] : [],
+            'filters' => $filters,
+        ]);
+    }
+
+    public function show(string $type, string $id)
+    {
+        $response = $this->api->get("/salary-slips/{$type}/{$id}");
+
+        if (!$response['success']) {
+            return redirect()->route('salary-slips.index')->with('error', 'Slip gaji tidak ditemukan');
+        }
+
+        return view('salary-slips.show', ['slip' => $response['data'], 'type' => $type]);
+    }
+
+    public function edit(string $type, string $id)
+    {
+        $response = $this->api->get("/salary-slips/{$type}/{$id}");
+
+        if (!$response['success']) {
+            return redirect()->route('salary-slips.index')->with('error', 'Slip gaji tidak ditemukan');
+        }
+
+        return view('salary-slips.edit', ['slip' => $response['data'], 'type' => $type]);
+    }
+
+    public function update(Request $request, string $type, string $id)
+    {
+        $fields = $type === 'tetap'
+            ? ['hari_kerja', 'alfa', 'izin', 'sakit', 'off', 'lembur', 'telat', 'harian',
+               'tunjangan_jabatan', 'tunjangan_bpjs', 'bonus_omset', 'bonus_kinerja', 'cashbond', 'tabungan']
+            : ['hari_kerja', 'full', 'shift', 'reguler', 'sakit', 'off', 'tunjangan', 'bonus'];
+
+        $response = $this->api->put("/salary-slips/{$type}/{$id}", $request->only($fields));
+
+        if (!$response['success']) {
+            return back()->withInput()->with('error', $response['message'] ?? 'Gagal memperbarui slip gaji');
+        }
+
+        return redirect()->route('salary-slips.show', ['type' => $type, 'id' => $id])->with('success', 'Slip gaji berhasil diperbarui');
+    }
+
+    public function destroy(string $type, string $id)
+    {
+        $response = $this->api->delete("/salary-slips/{$type}/{$id}");
+
+        return back()->with($response['success'] ? 'success' : 'error', $response['message']);
+    }
 }

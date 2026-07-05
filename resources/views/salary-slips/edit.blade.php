@@ -2,251 +2,51 @@
 
 @section('title', 'Edit Slip Gaji')
 @section('page-title', 'Edit Slip Gaji')
-@section('page-subtitle', 'Perbarui data slip gaji')
+@section('page-subtitle', $slip['employee']['name'] ?? '')
 
 @section('content')
+<div class="card">
+    <div class="card-body">
+        <form action="{{ route('salary-slips.update', ['type' => $type, 'id' => $slip['id']]) }}" method="POST">
+            @csrf @method('PUT')
 
-    <div class="page-header">
-        <div class="page-header-left">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('dashboard') }}">Dashboard</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('salary-slips.index') }}">Slip Gaji</a>
-                    </li>
-                    <li class="breadcrumb-item active">Edit</li>
-                </ol>
-            </nav>
-            <h1>Edit Slip: {{ $slip['employee']['full_name'] ?? '-' }}</h1>
-            <p>{{ $slip['period']['period_name'] ?? '-' }}</p>
-        </div>
-    </div>
-
-    @if ($slip['status'] === 'sent')
-        <div class="alert-custom alert-warning mb-4">
-            <i class="bi bi-lock-fill"></i>
-            Slip yang sudah terkirim tidak dapat diedit.
-        </div>
-    @endif
-
-    <div class="row">
-        <div class="col-md-7">
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-header-title">
-                        <i class="bi bi-pencil-fill"></i>
-                        Form Edit Slip Gaji
-                    </div>
-                </div>
-                <div class="card-body">
-
-                    @if (session('error'))
-                        <div class="alert-custom alert-error mb-3">
-                            <i class="bi bi-exclamation-circle-fill"></i>
-                            {{ session('error') }}
-                        </div>
-                    @endif
-
-                    <form action="{{ route('salary-slips.update', $slip['id']) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <fieldset {{ $slip['status'] === 'sent' ? 'disabled' : '' }}>
-
-                            {{-- Info karyawan & periode (readonly) --}}
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Karyawan</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $slip['employee']['full_name'] ?? '-' }}" disabled>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Periode</label>
-                                    <input type="text" class="form-control"
-                                        value="{{ $slip['period']['period_name'] ?? '-' }}" disabled>
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-
-                                {{-- Kategori — READONLY, terikat dengan data karyawan --}}
-                                <div class="col-12">
-                                    <label class="form-label">
-                                        Kategori Gaji
-                                        <span class="text-muted fs-13 fw-400 ms-1">
-                                            (terikat dengan data karyawan)
-                                        </span>
-                                    </label>
-
-                                    {{-- Hidden input untuk dikirim ke server --}}
-                                    <input type="hidden" name="category_id" id="categoryIdInput"
-                                        value="{{ old('category_id', $slip['category']['id'] ?? '') }}">
-
-                                    {{-- Tampilan readonly --}}
-                                    <div class="form-control" style="background:#F8F9FA;color:#212529;cursor:not-allowed;">
-                                        {{ $slip['category']['category_name'] ?? '-' }}
-                                        (Gaji Pokok: {{ rupiah($slip['category']['base_salary'] ?? 0) }})
-                                    </div>
-
-                                    <div class="form-text">
-                                        Untuk mengubah kategori, silakan edit data karyawan terlebih dahulu.
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">
-                                        Hari Masuk <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" name="total_working_days" id="workingDays"
-                                            class="form-control"
-                                            value="{{ old('total_working_days', $slip['total_working_days']) }}"
-                                            min="0" max="31" required oninput="updatePreview()">
-                                        <span class="input-group-text">hari</span>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Keterlambatan</label>
-                                    <div class="input-group">
-                                        <input type="number" name="late_count" id="lateCount" class="form-control"
-                                            value="{{ old('late_count', $slip['late_count']) }}" min="0"
-                                            oninput="updatePreview()">
-                                        <span class="input-group-text">kali</span>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Bonus</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp</span>
-                                        <input type="number" name="bonus" id="bonus" class="form-control"
-                                            value="{{ old('bonus', $slip['bonus']) }}" min="0" step="1000"
-                                            oninput="updatePreview()">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Potongan Tambahan</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">Rp</span>
-                                        <input type="number" name="additional_deduction" id="additionalDeduction"
-                                            class="form-control"
-                                            value="{{ old('additional_deduction', $slip['additional_deduction']) }}"
-                                            min="0" step="1000" oninput="updatePreview()">
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <label class="form-label">Catatan</label>
-                                    <textarea name="notes" class="form-control" rows="2">{{ old('notes', $slip['notes']) }}</textarea>
-                                </div>
-
-                            </div>
-
-                            @if ($slip['status'] !== 'sent')
-                                <div class="d-flex gap-2 mt-4">
-                                    <button type="submit" class="btn btn-primary fw-600">
-                                        <i class="bi bi-check-lg me-2"></i>Simpan Perubahan
-                                    </button>
-                                    <a href="{{ route('salary-slips.show', $slip['id']) }}"
-                                        class="btn btn-outline-secondary fw-600">
-                                        <i class="bi bi-x me-2"></i>Batal
-                                    </a>
-                                </div>
-                            @endif
-
-                        </fieldset>
-                    </form>
-                </div>
+            @if($type === 'tetap')
+            <div class="row g-3">
+                <div class="col-md-3"><label class="form-label">Hari Kerja</label><input type="number" min="0" name="hari_kerja" class="form-control" value="{{ old('hari_kerja', $slip['hari_kerja']) }}" required></div>
+                <div class="col-md-3"><label class="form-label">Alfa</label><input type="number" min="0" name="alfa" class="form-control" value="{{ old('alfa', $slip['alfa']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Izin</label><input type="number" min="0" name="izin" class="form-control" value="{{ old('izin', $slip['izin']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Sakit</label><input type="number" min="0" name="sakit" class="form-control" value="{{ old('sakit', $slip['sakit']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Off</label><input type="number" min="0" name="off" class="form-control" value="{{ old('off', $slip['off']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Lembur (Rp)</label><input type="number" min="0" name="lembur" class="form-control" value="{{ old('lembur', $slip['lembur']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Telat</label><input type="number" min="0" name="telat" class="form-control" value="{{ old('telat', $slip['telat']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Harian (Rp)</label><input type="number" min="0" name="harian" class="form-control" value="{{ old('harian', $slip['harian']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Tunjangan Jabatan</label><input type="number" min="0" name="tunjangan_jabatan" class="form-control" value="{{ old('tunjangan_jabatan', $slip['tunjangan_jabatan']) }}"></div>
+                <div class="col-md-3"><label class="form-label">BPJS</label><input type="number" min="0" name="tunjangan_bpjs" class="form-control" value="{{ old('tunjangan_bpjs', $slip['tunjangan_bpjs']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Bonus Omset</label><input type="number" min="0" name="bonus_omset" class="form-control" value="{{ old('bonus_omset', $slip['bonus_omset']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Bonus Kinerja</label><input type="number" min="0" name="bonus_kinerja" class="form-control" value="{{ old('bonus_kinerja', $slip['bonus_kinerja']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Cashbond</label><input type="number" min="0" name="cashbond" class="form-control" value="{{ old('cashbond', $slip['cashbond']) }}"></div>
+                <div class="col-md-3"><label class="form-label">Tabungan</label><input type="number" min="0" name="tabungan" class="form-control" value="{{ old('tabungan', $slip['tabungan']) }}"></div>
             </div>
-        </div>
-
-        {{-- Preview --}}
-        <div class="col-md-5">
-            <div class="card" style="position:sticky;top:80px;">
-                <div class="card-header">
-                    <div class="card-header-title">
-                        <i class="bi bi-calculator-fill"></i>
-                        Preview Kalkulasi
-                    </div>
-                </div>
-                <div class="card-body">
-                    <table class="w-100" style="font-size:14px;">
-                        <tr>
-                            <td class="py-2 text-muted">Gaji Pokok</td>
-                            <td class="py-2 text-end fw-600" id="pvBase">-</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 text-muted">Tunjangan</td>
-                            <td class="py-2 text-end fw-600" id="pvAllowance">-</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 text-muted">Bonus</td>
-                            <td class="py-2 text-end fw-600 text-success" id="pvBonus">-</td>
-                        </tr>
-                        <tr style="border-top:2px dashed #dee2e6;">
-                            <td class="py-2 fw-600">Subtotal</td>
-                            <td class="py-2 text-end fw-700" id="pvSubtotal">-</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 text-muted" id="pvLateLabel">Potongan Terlambat</td>
-                            <td class="py-2 text-end fw-600 text-danger" id="pvLate">-</td>
-                        </tr>
-                        <tr>
-                            <td class="py-2 text-muted">Potongan Tambahan</td>
-                            <td class="py-2 text-end fw-600 text-danger" id="pvDeduction">-</td>
-                        </tr>
-                        <tr style="border-top:2px solid var(--primary);background:#FFF3CD;">
-                            <td class="py-3 fw-700" style="padding-left:8px;">TOTAL</td>
-                            <td class="py-3 text-end fw-700 text-success" id="pvTotal"
-                                style="font-size:18px;padding-right:8px;">
-                                -
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+            <div class="form-text mt-2">Masuk, Gaji Pokok, Tunjangan Transport, Tunjangan Masa Kerja, Bonus Disiplin, THP, dan Total akan dihitung ulang otomatis sesuai pengaturan Kategorikal setelah disimpan.</div>
+            @else
+            <div class="row g-3">
+                <div class="col-md-4"><label class="form-label">Hari Kerja</label><input type="number" min="0" name="hari_kerja" class="form-control" value="{{ old('hari_kerja', $slip['hari_kerja']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Full</label><input type="number" min="0" name="full" class="form-control" value="{{ old('full', $slip['full']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Shift</label><input type="number" min="0" name="shift" class="form-control" value="{{ old('shift', $slip['shift']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Reguler</label><input type="number" min="0" name="reguler" class="form-control" value="{{ old('reguler', $slip['reguler']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Sakit</label><input type="number" min="0" name="sakit" class="form-control" value="{{ old('sakit', $slip['sakit']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Off</label><input type="number" min="0" name="off" class="form-control" value="{{ old('off', $slip['off']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Tunjangan</label><input type="number" min="0" name="tunjangan" class="form-control" value="{{ old('tunjangan', $slip['tunjangan']) }}"></div>
+                <div class="col-md-4"><label class="form-label">Bonus</label><input type="number" min="0" name="bonus" class="form-control" value="{{ old('bonus', $slip['bonus']) }}"></div>
             </div>
-        </div>
-    </div>
+            <div class="form-text mt-2">Total Full, Shift, Reguler, Transport, dan Total Fee akan dihitung ulang otomatis sesuai pengaturan Kategorikal setelah disimpan.</div>
+            @endif
 
+            <div class="mt-4">
+                <button class="btn btn-primary">Simpan Perubahan</button>
+                <a href="{{ route('salary-slips.show', ['type' => $type, 'id' => $slip['id']]) }}" class="btn btn-outline-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
-
-@push('scripts')
-<script>
-// Data kategori dari slip yang sedang diedit
-const activeCategory = {
-    base:      {{ $slip['category']['base_salary'] ?? 0 }},
-    allowance: {{ $slip['category']['allowance'] ?? 0 }},
-    penalty:   {{ $slip['category']['late_penalty'] ?? 0 }},
-};
-
-function formatRp(val) {
-    return 'Rp ' + parseInt(val || 0).toLocaleString('id-ID');
-}
-
-function updatePreview() {
-    const lateCount = parseInt(document.getElementById('lateCount').value)             || 0;
-    const bonus     = parseFloat(document.getElementById('bonus').value)               || 0;
-    const deduction = parseFloat(document.getElementById('additionalDeduction').value) || 0;
-
-    const latePenalty = lateCount * activeCategory.penalty;
-    const subtotal    = activeCategory.base + activeCategory.allowance + bonus;
-    const total       = Math.max(0, subtotal - latePenalty - deduction);
-
-    document.getElementById('pvBase').textContent      = formatRp(activeCategory.base);
-    document.getElementById('pvAllowance').textContent = formatRp(activeCategory.allowance);
-    document.getElementById('pvBonus').textContent     = formatRp(bonus);
-    document.getElementById('pvSubtotal').textContent  = formatRp(subtotal);
-    document.getElementById('pvLateLabel').textContent =
-        'Potongan Terlambat (' + lateCount + 'x)';
-    document.getElementById('pvLate').textContent      = '- ' + formatRp(latePenalty);
-    document.getElementById('pvDeduction').textContent = '- ' + formatRp(deduction);
-    document.getElementById('pvTotal').textContent     = formatRp(total);
-}
-
-document.addEventListener('DOMContentLoaded', updatePreview);
-</script>
-@endpush
