@@ -2,437 +2,339 @@
 
 @section('title', 'Input Massal Slip Gaji')
 @section('page-title', 'Input Massal Slip Gaji')
-@section('page-subtitle', 'Generate slip gaji untuk banyak karyawan sekaligus')
+@section('page-subtitle', 'Pilih periode dan cabang, lalu isi data kehadiran karyawan')
+
+@push('styles')
+<style>
+    .table-bulk { font-size: 13px; white-space: nowrap; }
+    .table-bulk input { min-width: 70px; }
+    .table-bulk .locked { background: #f1f3f5; }
+</style>
+@endpush
 
 @section('content')
 
-<div class="page-header">
-    <div class="page-header-left">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">
-                    <a href="{{ route('dashboard') }}">Dashboard</a>
-                </li>
-                <li class="breadcrumb-item">
-                    <a href="{{ route('salary-slips.index') }}">Slip Gaji</a>
-                </li>
-                <li class="breadcrumb-item active">Input Massal</li>
-            </ol>
-        </nav>
-        <h1>Input Massal Slip Gaji</h1>
-        <p>Generate slip gaji untuk beberapa karyawan sekaligus</p>
-    </div>
-    <a href="{{ route('salary-slips.create') }}"
-       class="btn btn-outline-secondary fw-600">
-        <i class="bi bi-person me-2"></i>Beralih ke Input Single
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <div class="card-header-title">
-            <i class="bi bi-people-fill"></i>
-            Form Input Massal
-        </div>
-    </div>
+<div class="card mb-3">
     <div class="card-body">
-
-        @if(session('error'))
-        <div class="alert-custom alert-error mb-3">
-            <i class="bi bi-exclamation-circle-fill"></i>
-            {{ session('error') }}
-        </div>
-        @endif
-
-        @if(count($periods) === 0)
-        <div class="alert-custom alert-warning mb-3">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            Tidak ada periode aktif (open). Minta Kepala Toko untuk membuka periode.
-        </div>
-        @endif
-
-        <form action="{{ route('salary-slips.bulk-generate') }}"
-              method="POST"
-              id="bulkForm">
-            @csrf
-
-            {{-- Pilih Periode --}}
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <label class="form-label fw-600">
-                        Periode Penggajian <span class="text-danger">*</span>
-                    </label>
-                    <select name="period_id"
-                            class="form-select @error('period_id') is-invalid @enderror"
-                            required>
-                        <option value="">-- Pilih Periode --</option>
-                        @foreach($periods as $period)
-                        <option value="{{ $period['id'] }}"
-                                {{ old('period_id', $selectedPeriod) == $period['id']
-                                    ? 'selected' : '' }}>
-                            {{ $period['period_name'] }}
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Periode Penggajian</label>
+                <select name="payroll_period_id" class="form-select" required onchange="this.form.submit()">
+                    <option value="">-- Pilih Periode --</option>
+                    @foreach($periods as $p)
+                        <option value="{{ $p['id'] }}" {{ $selectedPeriod == $p['id'] ? 'selected' : '' }}>
+                            {{ $p['name'] }}
                         </option>
-                        @endforeach
-                    </select>
-                    @error('period_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-5 d-flex align-items-end gap-2">
-                    <button type="button"
-                            class="btn btn-outline-secondary fw-600"
-                            onclick="addAllEmployees()">
-                        <i class="bi bi-people-fill me-2"></i>
-                        Tambah Semua Karyawan ({{ count($employees) }})
-                    </button>
-                    <button type="button"
-                            class="btn btn-outline-danger fw-600"
-                            onclick="clearAllRows()">
-                        <i class="bi bi-trash me-2"></i>Hapus Semua
-                    </button>
-                </div>
+                    @endforeach
+                </select>
             </div>
-
-            {{-- Notifikasi --}}
-            <div id="notifBox" style="display:none;" class="mb-3"></div>
-
-            {{-- Tabel Input Massal --}}
-            <div style="overflow-x:auto;">
-                <table class="table-custom w-100" id="bulkTable">
-                    <thead>
-                        <tr>
-                            <th width="22%">Karyawan</th>
-                            <th width="20%">Kategori Gaji</th>
-                            <th width="11%">Hari Masuk</th>
-                            <th width="10%">Terlambat</th>
-                            <th width="13%">Bonus (Rp)</th>
-                            <th width="13%">Potongan (Rp)</th>
-                            <th width="8%">Est. Gaji</th>
-                            <th width="3%"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="bulkBody">
-                        <tr id="emptyRow">
-                            <td colspan="8">
-                                <div class="empty-state py-4">
-                                    <div class="empty-state-icon">👆</div>
-                                    <p>Klik "Tambah Semua Karyawan" atau pilih karyawan satu per satu</p>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex gap-2 mt-4 align-items-center">
-                <button type="button"
-                        class="btn btn-outline-secondary fw-600"
-                        onclick="showAddOneDropdown()">
-                    <i class="bi bi-plus-circle me-2"></i>Tambah Satu Karyawan
-                </button>
-
-                {{-- Dropdown pilih karyawan satu-satu --}}
-                <div id="addOneBox" style="display:none;">
-                    <select id="addOneSelect" class="form-select" style="min-width:220px;">
-                        <option value="">-- Pilih Karyawan --</option>
-                        @foreach($employees as $emp)
-                        <option value="{{ $emp['id'] }}"
-                                data-name="{{ $emp['full_name'] }}"
-                                data-code="{{ $emp['employee_code'] ?? '-' }}"
-                                data-cat-id="{{ $emp['category']['id'] ?? '' }}"
-                                data-cat-name="{{ $emp['category']['category_name'] ?? '-' }}"
-                                data-base="{{ $emp['category']['base_salary'] ?? 0 }}"
-                                data-allowance="{{ $emp['category']['allowance'] ?? 0 }}"
-                                data-penalty="{{ $emp['category']['late_penalty'] ?? 0 }}">
-                            {{ $emp['full_name'] }}
-                            ({{ $emp['employee_code'] ?? '-' }})
+            <div class="col-md-4">
+                <label class="form-label">Cabang</label>
+                <select name="branch_id" class="form-select" required onchange="this.form.submit()">
+                    <option value="">-- Pilih Cabang --</option>
+                    @foreach($branches as $b)
+                        <option value="{{ $b['id'] }}" {{ $selectedBranch == $b['id'] ? 'selected' : '' }}>
+                            {{ $b['name'] }}
                         </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <button type="button"
-                        id="addOneBtn"
-                        class="btn btn-secondary fw-600"
-                        onclick="addOneEmployee()"
-                        style="display:none;">
-                    <i class="bi bi-plus"></i> Tambah
-                </button>
-
-                <button type="submit"
-                        class="btn btn-primary fw-600 ms-auto"
-                        id="submitBtn"
-                        {{ count($periods) === 0 ? 'disabled' : '' }}>
-                    <i class="bi bi-check-lg me-2"></i>
-                    Generate <span id="countLabel">0</span> Slip Gaji
-                </button>
+                    @endforeach
+                </select>
             </div>
-
         </form>
     </div>
 </div>
+
+@if($bulkData)
+<form action="{{ route('salary-slips.bulk-generate') }}" method="POST" id="bulkForm">
+    @csrf
+    <input type="hidden" name="payroll_period_id" value="{{ $selectedPeriod }}">
+    <input type="hidden" name="branch_id" value="{{ $selectedBranch }}">
+
+    {{-- ============== KARYAWAN TETAP ============== --}}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-person-workspace"></i> Karyawan Tetap</span>
+            <div>
+                <select id="selectTetap" class="form-select form-select-sm d-inline-block w-auto">
+                    <option value="">-- Tambah Satu Karyawan --</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOneTetap()">Tambah</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addAllTetap()">Tambah Semua</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllTetap()">Kosongkan</button>
+            </div>
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-bulk align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nama</th><th>Bergabung</th><th>Jabatan</th>
+                        <th>Hari Kerja</th><th>Alfa</th><th>Izin</th><th>Sakit</th><th>Off</th><th>Masuk</th>
+                        <th>Lembur</th><th>Telat</th><th>Harian</th><th>Gaji Pokok</th>
+                        <th>Transport</th><th>T.Jabatan</th><th>BPJS</th><th>T.Masa Kerja</th>
+                        <th>B.Disiplin</th><th>B.Omset</th><th>B.Kinerja</th>
+                        <th>Cashbond</th><th>Tabungan</th><th>THP</th><th>Total</th>
+                        <th>No Rek</th><th>Bank</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="tetapBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ============== TIM PARTIME ============== --}}
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold"><i class="bi bi-people"></i> Tim Partime</span>
+            <div>
+                <select id="selectPartime" class="form-select form-select-sm d-inline-block w-auto">
+                    <option value="">-- Tambah Satu Karyawan --</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOnePartime()">Tambah</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addAllPartime()">Tambah Semua</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllPartime()">Kosongkan</button>
+            </div>
+        </div>
+        <div class="card-body table-responsive">
+            <table class="table table-bordered table-bulk align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nama</th><th>Bergabung</th><th>Jabatan</th>
+                        <th>Hari Kerja</th><th>Full</th><th>Shift</th><th>Reguler</th><th>Sakit</th><th>Off</th>
+                        <th>Tunjangan</th><th>Total Full</th><th>Total Shift</th><th>Total Reguler</th>
+                        <th>Total Transport</th><th>Bonus</th><th>Total Fee</th>
+                        <th>No Rek</th><th>Bank</th><th></th>
+                    </tr>
+                </thead>
+                <tbody id="partimeBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success btn-lg">
+        <i class="bi bi-save"></i> Simpan Semua Slip Gaji
+    </button>
+</form>
+@else
+<div class="alert alert-info">Silakan pilih Periode Penggajian dan Cabang terlebih dahulu.</div>
+@endif
 
 @endsection
 
 @push('scripts')
 <script>
-// Data karyawan dari PHP — digunakan JS
-const employees = @json($employees);
+const SETTING = @json($bulkData['setting'] ?? []);
+const EMPLOYEES_TETAP = @json($bulkData['employees_tetap'] ?? []);
+const EMPLOYEES_PARTIME = @json($bulkData['employees_partime'] ?? []);
 
-// Track ID karyawan yang sudah ada di tabel
-let addedEmployeeIds = new Set();
-let rowCount = 0;
+const addedTetapIds = new Set();
+const addedPartimeIds = new Set();
 
-function formatRp(val) {
-    return 'Rp ' + parseInt(val || 0).toLocaleString('id-ID');
+function rupiah(n) {
+    n = Number(n) || 0;
+    return 'Rp' + n.toLocaleString('id-ID');
 }
 
-// ─── Tampilkan/sembunyikan dropdown tambah satu ───────────
-function showAddOneDropdown() {
-    const box = document.getElementById('addOneBox');
-    const btn = document.getElementById('addOneBtn');
-    const isVisible = box.style.display !== 'none';
-
-    box.style.display = isVisible ? 'none' : 'block';
-    btn.style.display = isVisible ? 'none' : 'inline-block';
+function tenureMonths(joinDate) {
+    const start = new Date(joinDate);
+    const now = new Date();
+    return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
 }
 
-// ─── Tambah satu karyawan dari dropdown ──────────────────
-function addOneEmployee() {
-    const select = document.getElementById('addOneSelect');
-    const empId  = select.value;
+/* ============ KARYAWAN TETAP ============ */
 
-    if (!empId) {
-        showNotif('warning', 'Pilih karyawan terlebih dahulu.');
-        return;
-    }
-
-    // Cek duplikat
-    if (addedEmployeeIds.has(empId)) {
-        const opt  = select.options[select.selectedIndex];
-        showNotif('warning', '"' + opt.dataset.name + '" sudah ada di daftar.');
-        return;
-    }
-
-    const option = select.options[select.selectedIndex];
-    addRow(
-        empId,
-        option.dataset.name,
-        option.dataset.code,
-        option.dataset.catId,
-        option.dataset.catName,
-        parseFloat(option.dataset.base)      || 0,
-        parseFloat(option.dataset.allowance) || 0,
-        parseFloat(option.dataset.penalty)   || 0
-    );
-
-    // Reset dropdown
-    select.value = '';
-    showNotif('success', '"' + option.dataset.name + '" berhasil ditambahkan.');
-}
-
-// ─── Tambah semua karyawan ────────────────────────────────
-function addAllEmployees() {
-    const notAdded = employees.filter(e => !addedEmployeeIds.has(String(e.id)));
-
-    if (notAdded.length === 0) {
-        showNotif('warning', 'Semua karyawan sudah ada di daftar pengisian slip gaji.');
-        return;
-    }
-
-    notAdded.forEach(emp => {
-        addRow(
-            String(emp.id),
-            emp.full_name,
-            emp.employee_code || '-',
-            emp.category?.id   || '',
-            emp.category?.category_name || '-',
-            parseFloat(emp.category?.base_salary)  || 0,
-            parseFloat(emp.category?.allowance)    || 0,
-            parseFloat(emp.category?.late_penalty) || 0
-        );
+function populateSelectTetap() {
+    const select = document.getElementById('selectTetap');
+    select.innerHTML = '<option value="">-- Tambah Satu Karyawan --</option>';
+    EMPLOYEES_TETAP.forEach(emp => {
+        if (!addedTetapIds.has(emp.id)) {
+            select.innerHTML += `<option value="${emp.id}">${emp.name}</option>`;
+        }
     });
-
-    showNotif('success', notAdded.length + ' karyawan berhasil ditambahkan ke daftar.');
 }
 
-// ─── Tambah baris ke tabel ───────────────────────────────
-function addRow(empId, empName, empCode, catId, catName, base, allowance, penalty) {
-    const tbody    = document.getElementById('bulkBody');
-    const emptyRow = document.getElementById('emptyRow');
-    if (emptyRow) emptyRow.remove();
+function addAllTetap() {
+    EMPLOYEES_TETAP.forEach(emp => { if (!addedTetapIds.has(emp.id)) addRowTetap(emp); });
+    populateSelectTetap();
+}
 
-    const idx = rowCount++;
-    const tr  = document.createElement('tr');
-    tr.id     = 'row-' + idx;
-    tr.dataset.empId = empId;
+function addOneTetap() {
+    const id = parseInt(document.getElementById('selectTetap').value);
+    const emp = EMPLOYEES_TETAP.find(e => e.id === id);
+    if (emp && !addedTetapIds.has(emp.id)) {
+        addRowTetap(emp);
+        populateSelectTetap();
+    }
+}
 
+function clearAllTetap() {
+    document.getElementById('tetapBody').innerHTML = '';
+    addedTetapIds.clear();
+    populateSelectTetap();
+}
+
+function addRowTetap(emp) {
+    addedTetapIds.add(emp.id);
+    const existing = emp.slip_tetap_for_period || {};
+    const idx = emp.id;
+    const tr = document.createElement('tr');
+    tr.id = `tetap-row-${idx}`;
     tr.innerHTML = `
-        {{-- Hidden inputs --}}
-        <input type="hidden" name="employees[${idx}][employee_id]" value="${empId}">
-        <input type="hidden" name="employees[${idx}][category_id]" value="${catId}">
-
-        <td>
-            <div class="fw-700 fs-13">${empName}</div>
-            <div class="fs-13 text-muted">${empCode}</div>
-        </td>
-        <td>
-            <div class="fs-13 fw-600">${catName}</div>
-            <div class="fs-13 text-muted">${formatRp(base)}/bln</div>
-        </td>
-        <td>
-            <input type="number"
-                   name="employees[${idx}][total_working_days]"
-                   class="form-control form-control-sm"
-                   value="26" min="0" max="31" required
-                   data-base="${base}" data-allowance="${allowance}" data-penalty="${penalty}"
-                   onchange="calcRowTotal(this)">
-        </td>
-        <td>
-            <input type="number"
-                   name="employees[${idx}][late_count]"
-                   class="form-control form-control-sm late-count"
-                   value="0" min="0"
-                   data-base="${base}" data-allowance="${allowance}" data-penalty="${penalty}"
-                   onchange="calcRowTotal(this)">
-        </td>
-        <td>
-            <input type="number"
-                   name="employees[${idx}][bonus]"
-                   class="form-control form-control-sm bonus-input"
-                   value="0" min="0" step="1000"
-                   data-base="${base}" data-allowance="${allowance}" data-penalty="${penalty}"
-                   onchange="calcRowTotal(this)">
-        </td>
-        <td>
-            <input type="number"
-                   name="employees[${idx}][additional_deduction]"
-                   class="form-control form-control-sm deduction-input"
-                   value="0" min="0" step="1000"
-                   data-base="${base}" data-allowance="${allowance}" data-penalty="${penalty}"
-                   onchange="calcRowTotal(this)">
-        </td>
-        <td>
-            <span class="est-salary fw-600 fs-13 text-success">
-                ${formatRp(base + allowance)}
-            </span>
-        </td>
-        <td>
-            <button type="button"
-                    class="btn-action delete"
-                    onclick="removeRow(${idx}, '${empId}')"
-                    title="Hapus">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </td>
+        <td>${emp.name}<input type="hidden" name="tetap[${idx}][employee_id]" value="${emp.id}"></td>
+        <td>${emp.join_date ? emp.join_date.substring(0,10) : '-'}</td>
+        <td>${emp.position?.name ?? '-'}</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][alfa]" value="${existing.alfa ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][izin]" value="${existing.izin ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][sakit]" value="${existing.sakit ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][off]" value="${existing.off ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked text-end" id="tetap-${idx}-masuk">0</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][lembur]" value="${existing.lembur ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][telat]" value="${existing.telat ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][harian]" value="${existing.harian ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked text-end" id="tetap-${idx}-gaji_pokok">Rp0</td>
+        <td class="locked text-end" id="tetap-${idx}-transport">Rp0</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tunjangan_jabatan]" value="${existing.tunjangan_jabatan ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tunjangan_bpjs]" value="${existing.tunjangan_bpjs ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked text-end" id="tetap-${idx}-masa_kerja">Rp0</td>
+        <td class="locked text-end" id="tetap-${idx}-disiplin">Rp0</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][bonus_omset]" value="${existing.bonus_omset ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][bonus_kinerja]" value="${existing.bonus_kinerja ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][cashbond]" value="${existing.cashbond ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tabungan]" value="${existing.tabungan ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked text-end fw-semibold" id="tetap-${idx}-thp">Rp0</td>
+        <td class="locked text-end fw-semibold" id="tetap-${idx}-total">Rp0</td>
+        <td>${emp.bank_account_number ?? '-'}</td>
+        <td>${emp.bank_name ?? '-'}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowTetap(${idx})"><i class="bi bi-x"></i></button></td>
     `;
-
-    tbody.appendChild(tr);
-
-    // Tandai karyawan sudah ditambahkan
-    addedEmployeeIds.add(empId);
-    updateCount();
+    tr.dataset.joinDate = emp.join_date;
+    document.getElementById('tetapBody').appendChild(tr);
+    calcTetap(idx);
 }
 
-// ─── Hitung estimasi gaji per baris ──────────────────────
-function calcRowTotal(input) {
-    const row       = input.closest('tr');
-    const lateInput = row.querySelector('.late-count');
-    const bonusInput = row.querySelector('.bonus-input');
-    const deductInput = row.querySelector('.deduction-input');
-
-    // Ambil data dari input manapun yang diubah
-    const base      = parseFloat(input.dataset.base)      || 0;
-    const allowance = parseFloat(input.dataset.allowance) || 0;
-    const penalty   = parseFloat(input.dataset.penalty)   || 0;
-
-    const lateCount = parseInt(lateInput?.value)    || 0;
-    const bonus     = parseFloat(bonusInput?.value) || 0;
-    const deduction = parseFloat(deductInput?.value)|| 0;
-
-    const total = Math.max(0,
-        base + allowance + bonus - (lateCount * penalty) - deduction
-    );
-
-    row.querySelector('.est-salary').textContent = formatRp(total);
+function removeRowTetap(idx) {
+    document.getElementById(`tetap-row-${idx}`)?.remove();
+    addedTetapIds.delete(idx);
+    populateSelectTetap();
 }
 
-// ─── Hapus baris ──────────────────────────────────────────
-function removeRow(idx, empId) {
-    const row = document.getElementById('row-' + idx);
-    if (row) {
-        row.remove();
-        addedEmployeeIds.delete(empId);
-        updateCount();
+function calcTetap(idx) {
+    const row = document.getElementById(`tetap-row-${idx}`);
+    if (!row) return;
+    const val = name => parseFloat(row.querySelector(`[name="tetap[${idx}][${name}]"]`)?.value) || 0;
+
+    const masuk = Math.max(0, val('hari_kerja') - val('alfa') - val('izin') - val('sakit') - val('off'));
+    const gajiPokok = val('harian') * masuk;
+    const transport = (SETTING.transport_tetap || 0) * masuk;
+    const disiplin = (SETTING.disiplin_bonus_tetap || 0) * masuk;
+    const months = tenureMonths(row.dataset.joinDate);
+    const masaKerja = months >= (SETTING.tenure_months_threshold || 0) ? (SETTING.tenure_bonus_amount || 0) : 0;
+
+    const thp = (val('lembur') + gajiPokok + transport + val('tunjangan_jabatan') + val('tunjangan_bpjs')
+        + masaKerja + disiplin + val('bonus_omset') + val('bonus_kinerja')) - (val('cashbond') + val('tabungan'));
+    const total = thp + val('tabungan') + val('cashbond');
+
+    document.getElementById(`tetap-${idx}-masuk`).textContent = masuk;
+    document.getElementById(`tetap-${idx}-gaji_pokok`).textContent = rupiah(gajiPokok);
+    document.getElementById(`tetap-${idx}-transport`).textContent = rupiah(transport);
+    document.getElementById(`tetap-${idx}-masa_kerja`).textContent = rupiah(masaKerja);
+    document.getElementById(`tetap-${idx}-disiplin`).textContent = rupiah(disiplin);
+    document.getElementById(`tetap-${idx}-thp`).textContent = rupiah(thp);
+    document.getElementById(`tetap-${idx}-total`).textContent = rupiah(total);
+}
+
+/* ============ TIM PARTIME ============ */
+
+function populateSelectPartime() {
+    const select = document.getElementById('selectPartime');
+    select.innerHTML = '<option value="">-- Tambah Satu Karyawan --</option>';
+    EMPLOYEES_PARTIME.forEach(emp => {
+        if (!addedPartimeIds.has(emp.id)) {
+            select.innerHTML += `<option value="${emp.id}">${emp.name}</option>`;
+        }
+    });
+}
+
+function addAllPartime() {
+    EMPLOYEES_PARTIME.forEach(emp => { if (!addedPartimeIds.has(emp.id)) addRowPartime(emp); });
+    populateSelectPartime();
+}
+
+function addOnePartime() {
+    const id = parseInt(document.getElementById('selectPartime').value);
+    const emp = EMPLOYEES_PARTIME.find(e => e.id === id);
+    if (emp && !addedPartimeIds.has(emp.id)) {
+        addRowPartime(emp);
+        populateSelectPartime();
     }
-
-    // Tampilkan empty row jika tidak ada baris
-    if (document.querySelectorAll('#bulkBody tr[id^="row-"]').length === 0) {
-        const tbody = document.getElementById('bulkBody');
-        tbody.innerHTML = `
-            <tr id="emptyRow">
-                <td colspan="8">
-                    <div class="empty-state py-4">
-                        <div class="empty-state-icon">👆</div>
-                        <p>Klik "Tambah Semua Karyawan" atau pilih karyawan satu per satu</p>
-                    </div>
-                </td>
-            </tr>`;
-    }
 }
 
-// ─── Hapus semua baris ────────────────────────────────────
-function clearAllRows() {
-    if (!confirm('Hapus semua karyawan dari daftar?')) return;
-
-    addedEmployeeIds.clear();
-    rowCount = 0;
-
-    const tbody = document.getElementById('bulkBody');
-    tbody.innerHTML = `
-        <tr id="emptyRow">
-            <td colspan="8">
-                <div class="empty-state py-4">
-                    <div class="empty-state-icon">👆</div>
-                    <p>Klik "Tambah Semua Karyawan" atau pilih karyawan satu per satu</p>
-                </div>
-            </td>
-        </tr>`;
-    updateCount();
-    showNotif('info', 'Semua karyawan telah dihapus dari daftar.');
+function clearAllPartime() {
+    document.getElementById('partimeBody').innerHTML = '';
+    addedPartimeIds.clear();
+    populateSelectPartime();
 }
 
-// ─── Update counter submit button ────────────────────────
-function updateCount() {
-    const count = document.querySelectorAll('#bulkBody tr[id^="row-"]').length;
-    document.getElementById('countLabel').textContent = count;
+function addRowPartime(emp) {
+    addedPartimeIds.add(emp.id);
+    const existing = emp.slip_partime_for_period || {};
+    const idx = emp.id;
+    const tr = document.createElement('tr');
+    tr.id = `partime-row-${idx}`;
+    tr.innerHTML = `
+        <td>${emp.name}<input type="hidden" name="partime[${idx}][employee_id]" value="${emp.id}"></td>
+        <td>${emp.join_date ? emp.join_date.substring(0,10) : '-'}</td>
+        <td>${emp.position?.name ?? '-'}</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][full]" value="${existing.full ?? 0}" onchange="calcPartime(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][shift]" value="${existing.shift ?? 0}" onchange="calcPartime(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][reguler]" value="${existing.reguler ?? 0}" onchange="calcPartime(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][sakit]" value="${existing.sakit ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][off]" value="${existing.off ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][tunjangan]" value="${existing.tunjangan ?? 0}" onchange="calcPartime(${idx})"></td>
+        <td class="locked text-end" id="partime-${idx}-total_full">Rp0</td>
+        <td class="locked text-end" id="partime-${idx}-total_shift">Rp0</td>
+        <td class="locked text-end" id="partime-${idx}-total_reguler">Rp0</td>
+        <td class="locked text-end" id="partime-${idx}-total_transport">Rp0</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][bonus]" value="${existing.bonus ?? 0}" onchange="calcPartime(${idx})"></td>
+        <td class="locked text-end fw-semibold" id="partime-${idx}-total_fee">Rp0</td>
+        <td>${emp.bank_account_number ?? '-'}</td>
+        <td>${emp.bank_name ?? '-'}</td>
+        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowPartime(${idx})"><i class="bi bi-x"></i></button></td>
+    `;
+    document.getElementById('partimeBody').appendChild(tr);
+    calcPartime(idx);
 }
 
-// ─── Tampilkan notifikasi ─────────────────────────────────
-function showNotif(type, message) {
-    const box      = document.getElementById('notifBox');
-    const typeMap  = {
-        'success': 'alert-success',
-        'warning': 'alert-warning',
-        'info':    'alert-info',
-        'error':   'alert-error',
-    };
-    const iconMap  = {
-        'success': 'bi-check-circle-fill',
-        'warning': 'bi-exclamation-triangle-fill',
-        'info':    'bi-info-circle-fill',
-        'error':   'bi-exclamation-circle-fill',
-    };
-
-    box.className  = 'alert-custom ' + (typeMap[type] || 'alert-info') + ' mb-3';
-    box.innerHTML  = `<i class="bi ${iconMap[type] || 'bi-info-circle-fill'}"></i> ${message}`;
-    box.style.display = 'flex';
-
-    // Auto hide setelah 4 detik
-    clearTimeout(box._timeout);
-    box._timeout = setTimeout(() => {
-        box.style.display = 'none';
-    }, 4000);
+function removeRowPartime(idx) {
+    document.getElementById(`partime-row-${idx}`)?.remove();
+    addedPartimeIds.delete(idx);
+    populateSelectPartime();
 }
+
+function calcPartime(idx) {
+    const row = document.getElementById(`partime-row-${idx}`);
+    if (!row) return;
+    const val = name => parseFloat(row.querySelector(`[name="partime[${idx}][${name}]"]`)?.value) || 0;
+
+    const totalFull = (SETTING.rate_full || 0) * val('full');
+    const totalShift = (SETTING.rate_shift || 0) * val('shift');
+    const totalReguler = (SETTING.rate_reguler || 0) * val('reguler');
+    const totalTransport = (SETTING.transport_partime || 0) * (val('full') + val('shift') + val('reguler'));
+    const totalFee = val('tunjangan') + totalFull + totalShift + totalReguler + totalTransport + val('bonus');
+
+    document.getElementById(`partime-${idx}-total_full`).textContent = rupiah(totalFull);
+    document.getElementById(`partime-${idx}-total_shift`).textContent = rupiah(totalShift);
+    document.getElementById(`partime-${idx}-total_reguler`).textContent = rupiah(totalReguler);
+    document.getElementById(`partime-${idx}-total_transport`).textContent = rupiah(totalTransport);
+    document.getElementById(`partime-${idx}-total_fee`).textContent = rupiah(totalFee);
+}
+
+/* Inisialisasi: kalau karyawan sudah punya slip di periode ini, tampilkan otomatis */
+document.addEventListener('DOMContentLoaded', () => {
+    EMPLOYEES_TETAP.forEach(emp => { if (emp.slip_tetap_for_period) addRowTetap(emp); });
+    EMPLOYEES_PARTIME.forEach(emp => { if (emp.slip_partime_for_period) addRowPartime(emp); });
+    populateSelectTetap();
+    populateSelectPartime();
+});
 </script>
 @endpush
