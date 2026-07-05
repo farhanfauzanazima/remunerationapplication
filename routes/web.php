@@ -11,6 +11,8 @@ use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalarySlipController;
+use App\Http\Controllers\CategoricalController;
+use App\Http\Controllers\HrManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -112,5 +114,21 @@ Route::middleware('auth.api')->group(function () {
     Route::middleware('role:owner')->group(function () {
         Route::get('/activity-logs',      [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+    });
+
+    Route::get('/salary-slips/create', [SalarySlipController::class, 'create'])
+        ->name('salary-slips.create');
+
+    // ---------- Kategorikal — owner & hr ----------
+    Route::get('/categorical', [CategoricalController::class, 'index'])->name('categorical.index');
+    Route::put('/categorical', [CategoricalController::class, 'update'])->name('categorical.update');
+
+    // ---------- Manajemen HR — Owner only ----------
+    Route::middleware('role:owner')->prefix('hr-management')->group(function () {
+        Route::get('/', [HrManagementController::class, 'index'])->name('hr-management.index');
+        Route::post('/', [HrManagementController::class, 'store'])->name('hr-management.store');
+        Route::put('/{id}', [HrManagementController::class, 'update'])->name('hr-management.update');
+        Route::post('/{id}/reset-password', [HrManagementController::class, 'resetPassword'])->name('hr-management.reset-password');
+        Route::delete('/{id}', [HrManagementController::class, 'destroy'])->name('hr-management.destroy');
     });
 });

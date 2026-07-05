@@ -34,10 +34,9 @@
         </a>
 
         {{-- Navigation --}}
-        {{-- Navigation --}}
         <nav class="sidebar-nav">
 
-            {{-- MENU UTAMA --}}
+            {{-- MENU UTAMA — semua role --}}
             <div class="sidebar-section-label">Menu Utama</div>
 
             <a href="{{ route('dashboard') }}"
@@ -46,50 +45,41 @@
                 Dashboard
             </a>
 
-            {{-- OWNER ONLY --}}
-            @if (session('user.role') === 'owner')
-                <div class="sidebar-section-label">Master Data</div>
+            {{-- MASTER DATA — Owner & HR (tulis tetap dibatasi per-halaman) --}}
+            <div class="sidebar-section-label">Master Data</div>
 
-                <a href="{{ route('categories.index') }}"
-                    class="sidebar-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-tags-fill"></i></span>
-                    Kategori Gaji
-                </a>
+            <a href="{{ route('categorical.index') }}"
+                class="sidebar-item {{ request()->routeIs('categorical.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-sliders"></i></span>
+                Kategorikal
+            </a>
 
-                <a href="{{ route('branches.index') }}"
-                    class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-shop"></i></span>
-                    Cabang
-                </a>
+            <a href="{{ route('branches.index') }}"
+                class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-shop"></i></span>
+                Cabang
+            </a>
 
-                <a href="{{ route('positions.index') }}"
-                    class="sidebar-item {{ request()->routeIs('positions.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-person-badge"></i></span>
-                    Jabatan
-                </a>
-            @endif
+            <a href="{{ route('positions.index') }}"
+                class="sidebar-item {{ request()->routeIs('positions.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-person-badge"></i></span>
+                Jabatan
+            </a>
 
-            {{-- OWNER & HEAD --}}
-            @if (in_array(session('user.role'), ['owner', 'head']))
-                <div class="sidebar-section-label">Penggajian</div>
+            {{-- PENGGAJIAN — Owner & HR --}}
+            <div class="sidebar-section-label">Penggajian</div>
 
-                <a href="{{ route('employees.index') }}"
-                    class="sidebar-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-people-fill"></i></span>
-                    Karyawan
-                </a>
+            <a href="{{ route('employees.index') }}"
+                class="sidebar-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-people-fill"></i></span>
+                Karyawan
+            </a>
 
-                <a href="{{ route('periods.index') }}"
-                    class="sidebar-item {{ request()->routeIs('periods.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-calendar3"></i></span>
-                    Periode
-                </a>
-            @endif
-
-            {{-- SEMUA ROLE --}}
-            @if (session('user.role') === 'admin')
-                <div class="sidebar-section-label">Penggajian</div>
-            @endif
+            <a href="{{ route('periods.index') }}"
+                class="sidebar-item {{ request()->routeIs('periods.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-calendar3"></i></span>
+                Periode
+            </a>
 
             <a href="{{ route('salary-slips.index') }}"
                 class="sidebar-item {{ request()->routeIs('salary-slips.*') ? 'active' : '' }}">
@@ -97,26 +87,29 @@
                 Slip Gaji
             </a>
 
-            <a href="{{ route('emails.index') }}"
-                class="sidebar-item {{ request()->routeIs('emails.*') ? 'active' : '' }}">
-                <span class="sidebar-icon"><i class="bi bi-envelope-fill"></i></span>
-                Distribusi Email
+            <a href="{{ route('distribution.index') }}"
+                class="sidebar-item {{ request()->routeIs('distribution.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-send-fill"></i></span>
+                Distribusi Gaji
             </a>
+            {{-- ANALITIK — Owner & HR --}}
+            <div class="sidebar-section-label">Analitik</div>
 
-            {{-- LAPORAN — Owner & Head --}}
-            @if (in_array(session('user.role'), ['owner', 'head']))
-                <div class="sidebar-section-label">Analitik</div>
-
-                <a href="{{ route('reports.index') }}"
-                    class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                    <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
-                    Laporan
-                </a>
-            @endif
+            <a href="{{ route('reports.index') }}"
+                class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-bar-chart-fill"></i></span>
+                Laporan
+            </a>
 
             {{-- SISTEM — Owner only --}}
             @if (session('user.role') === 'owner')
                 <div class="sidebar-section-label">Sistem</div>
+
+                <a href="{{ route('hr-management.index') }}"
+                    class="sidebar-item {{ request()->routeIs('hr-management.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-person-lines-fill"></i></span>
+                    Manajemen HR
+                </a>
 
                 <a href="{{ route('activity-logs.index') }}"
                     class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
@@ -174,7 +167,7 @@
             <div class="topbar-right">
                 <span class="badge-custom badge-{{ session('user.role') }} fs-13">
                     <i class="bi bi-person-badge-fill me-1"></i>
-                    {{ ucfirst(session('user.role', '-')) }}
+                    {{ session('user.role') === 'owner' ? 'Owner' : 'HR' }}
                 </span>
             </div>
         </div>
@@ -212,7 +205,7 @@
         <footer
             style="padding: 16px 24px; border-top: 1px solid var(--border); background: var(--white); text-align: center;">
             <span style="font-size: 13px; color: #6c757d;">
-                &copy; {{ date('Y') }} Sistem Remunerasi Restoran &mdash; Versi 1.0.0
+                &copy; {{ date('Y') }} Sistem Remunerasi Restoran &mdash; Versi 2.0.0
             </span>
         </footer>
 
