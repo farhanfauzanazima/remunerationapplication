@@ -55,6 +55,18 @@
                     <span class="sidebar-icon"><i class="bi bi-tags-fill"></i></span>
                     Kategori Gaji
                 </a>
+
+                <a href="{{ route('branches.index') }}"
+                    class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-shop"></i></span>
+                    Cabang
+                </a>
+
+                <a href="{{ route('positions.index') }}"
+                    class="sidebar-item {{ request()->routeIs('positions.*') ? 'active' : '' }}">
+                    <span class="sidebar-icon"><i class="bi bi-person-badge"></i></span>
+                    Jabatan
+                </a>
             @endif
 
             {{-- OWNER & HEAD --}}

@@ -429,7 +429,7 @@ composer dump-autoload
 **Farhan Fauzan Azima**
 - GitHub: [@farhanfauzanazima](https://github.com/farhanfauzanazima)
 - Repository Frontend Website: [remunerationapplication](https://github.com/farhanfauzanazima/remunerationapplication)
-- Repository Frontend Mobile: [remunerationapplication](https://github.com/farhanfauzanazima/mobileremunerationapplication)
+- Repository Frontend Mobile: [mobileremunerationapplication](https://github.com/farhanfauzanazima/mobileremunerationapplication)
 - Repository Backend: [apiremunerationapplication](https://github.com/farhanfauzanazima/apiremunerationapplication)
 
 ---
