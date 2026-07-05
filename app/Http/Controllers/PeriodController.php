@@ -7,146 +7,70 @@ use Illuminate\Http\Request;
 
 class PeriodController extends Controller
 {
-    public function __construct(
-        protected ApiService $api
-    ) {}
+    protected array $bulanIndo = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+    ];
 
-    // GET /periods
+    public function __construct(protected ApiService $api) {}
+
     public function index(Request $request)
     {
-        $params = [];
-        if ($request->filled('status')) {
-            $params['status'] = $request->status;
-        }
-        if ($request->filled('search')) {
-            $params['search'] = $request->search;
-        }
+        $response = $this->api->get('/payroll-periods', $request->only(['search', 'year']));
 
-        $response = $this->api->get('/payroll-periods', $params);
-        $periods  = $response['success'] ? ($response['data'] ?? []) : [];
-        $error    = !$response['success'] ? $response['message'] : null;
-
-        return view('periods.index', compact('periods', 'error'));
+        return view('periods.index', [
+            'periods' => $response['success'] ? $response['data'] : [],
+            'bulanIndo' => $this->bulanIndo,
+            'filters' => $request->only(['search', 'year']),
+        ]);
     }
 
-    // GET /periods/create
     public function create()
     {
-        return view('periods.create');
+        return view('periods.create', ['bulanIndo' => $this->bulanIndo]);
     }
 
-    // POST /periods
     public function store(Request $request)
     {
-        $request->validate([
-            'period_name' => 'required|string|max:50',
-            'start_date'  => 'required|date',
-            'end_date'    => 'required|date|after_or_equal:start_date',
-            'notes'       => 'nullable|string',
-        ], [
-            'period_name.required'    => 'Nama periode wajib diisi.',
-            'start_date.required'     => 'Tanggal mulai wajib diisi.',
-            'end_date.required'       => 'Tanggal akhir wajib diisi.',
-            'end_date.after_or_equal' => 'Tanggal akhir harus sama atau setelah tanggal mulai.',
+        $response = $this->api->post('/payroll-periods', $request->only('name', 'month', 'year', 'notes'));
+
+        if (!$response['success']) {
+            return back()->withInput()->with('error', $response['message'] ?? 'Gagal menambahkan periode');
+        }
+
+        return redirect()->route('periods.index')->with('success', 'Periode penggajian berhasil ditambahkan');
+    }
+
+    public function edit(string $id)
+    {
+        $response = $this->api->get("/payroll-periods/{$id}");
+
+        if (!$response['success']) {
+            return redirect()->route('periods.index')->with('error', 'Periode tidak ditemukan');
+        }
+
+        return view('periods.edit', [
+            'period' => $response['data'],
+            'bulanIndo' => $this->bulanIndo,
         ]);
-
-        $response = $this->api->post('/payroll-periods', [
-            'period_name' => $request->period_name,
-            'start_date'  => $request->start_date,
-            'end_date'    => $request->end_date,
-            'notes'       => $request->notes,
-        ]);
-
-        if (!$response['success']) {
-            return back()
-                ->with('error', $response['message'] ?? 'Gagal menambah periode.')
-                ->withInput();
-        }
-
-        return redirect()->route('periods.index')
-            ->with('success', 'Periode penggajian berhasil ditambahkan.');
     }
 
-    // GET /periods/{id}/edit
-    public function edit(int $id)
+    public function update(Request $request, string $id)
     {
-        $response = $this->api->get('/payroll-periods/' . $id);
+        $response = $this->api->put("/payroll-periods/{$id}", $request->only('name', 'month', 'year', 'notes'));
 
         if (!$response['success']) {
-            return redirect()->route('periods.index')
-                ->with('error', 'Periode tidak ditemukan.');
+            return back()->withInput()->with('error', $response['message'] ?? 'Gagal memperbarui periode');
         }
 
-        $period = $response['data'];
-
-        return view('periods.edit', compact('period'));
+        return redirect()->route('periods.index')->with('success', 'Periode penggajian berhasil diperbarui');
     }
 
-    // PUT /periods/{id}
-    public function update(Request $request, int $id)
+    public function destroy(string $id)
     {
-        $request->validate([
-            'period_name' => 'required|string|max:50',
-            'start_date'  => 'required|date',
-            'end_date'    => 'required|date|after_or_equal:start_date',
-            'notes'       => 'nullable|string',
-        ], [
-            'period_name.required'    => 'Nama periode wajib diisi.',
-            'start_date.required'     => 'Tanggal mulai wajib diisi.',
-            'end_date.required'       => 'Tanggal akhir wajib diisi.',
-            'end_date.after_or_equal' => 'Tanggal akhir harus sama atau setelah tanggal mulai.',
-        ]);
+        $response = $this->api->delete("/payroll-periods/{$id}");
 
-        $response = $this->api->put('/payroll-periods/' . $id, [
-            'period_name' => $request->period_name,
-            'start_date'  => $request->start_date,
-            'end_date'    => $request->end_date,
-            'notes'       => $request->notes,
-        ]);
-
-        if (!$response['success']) {
-            return back()
-                ->with('error', $response['message'] ?? 'Gagal update periode.')
-                ->withInput();
-        }
-
-        return redirect()->route('periods.index')
-            ->with('success', 'Periode penggajian berhasil diperbarui.');
-    }
-
-    // DELETE /periods/{id}
-    public function destroy(int $id)
-    {
-        $response = $this->api->delete('/payroll-periods/' . $id);
-
-        if (!$response['success']) {
-            return back()->with('error', $response['message'] ?? 'Gagal menghapus periode.');
-        }
-
-        return back()->with('success', 'Periode penggajian berhasil dihapus.');
-    }
-
-    // PUT /periods/{id}/close
-    public function close(int $id)
-    {
-        $response = $this->api->put('/payroll-periods/' . $id . '/close');
-
-        if (!$response['success']) {
-            return back()->with('error', $response['message'] ?? 'Gagal menutup periode.');
-        }
-
-        return back()->with('success', 'Periode penggajian berhasil ditutup.');
-    }
-
-    // PUT /periods/{id}/reopen
-    public function reopen(int $id)
-    {
-        $response = $this->api->put('/payroll-periods/' . $id . '/reopen');
-
-        if (!$response['success']) {
-            return back()->with('error', $response['message'] ?? 'Gagal membuka kembali periode.');
-        }
-
-        return back()->with('success', 'Periode penggajian berhasil dibuka kembali.');
+        return back()->with($response['success'] ? 'success' : 'error', $response['message']);
     }
 }
