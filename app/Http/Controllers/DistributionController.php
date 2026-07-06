@@ -58,9 +58,6 @@ class DistributionController extends Controller
             return back()->with('error', $response['message'] ?? 'Gagal mengirim distribusi');
         }
 
-        $totalSukses = collect($response['data'])->where('success', true)->count();
-        $totalGagal = collect($response['data'])->where('success', false)->count();
-
-        return back()->with('success', "Distribusi selesai: {$totalSukses} berhasil, {$totalGagal} gagal.");
+        return back()->with('success', $response['message']);
     }
 }
