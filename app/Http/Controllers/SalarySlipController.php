@@ -68,13 +68,12 @@ class SalarySlipController extends Controller
         return view('salary-slips.index', [
             'tetap' => $response['success'] ? ($response['data']['tetap'] ?? []) : [],
             'partime' => $response['success'] ? ($response['data']['partime'] ?? []) : [],
-            'pagination' => $response['raw']['pagination'] ?? null,
+            'pagination' => $response['raw']['raw']['pagination'] ?? null, // <-- diperbaiki, sebelumnya $response['raw']['pagination']
             'periods' => $periods['success'] ? $periods['data'] : [],
             'branches' => $branches['success'] ? $branches['data'] : [],
             'filters' => $filters,
         ]);
     }
-
     public function show(string $type, string $id)
     {
         $response = $this->api->get("/salary-slips/{$type}/{$id}");

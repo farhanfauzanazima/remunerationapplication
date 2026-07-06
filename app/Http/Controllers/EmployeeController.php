@@ -18,12 +18,11 @@ class EmployeeController extends Controller
 
         return view('employees.index', [
             'employees' => $response['success'] ? $response['data'] : [],
-            'pagination' => $response['raw']['pagination'] ?? null,
+            'pagination' => $response['raw']['raw']['pagination'] ?? null, // <-- diperbaiki
             'branches' => $branchResponse['success'] ? $branchResponse['data'] : [],
             'filters' => $query,
         ]);
     }
-
     public function create()
     {
         $branches = $this->api->get('/branches');

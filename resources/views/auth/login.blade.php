@@ -40,7 +40,7 @@
                 type="email"
                 name="email"
                 class="form-control @error('email') is-invalid @enderror"
-                placeholder="email@restoran.com"
+                placeholder="email@restoran.id"
                 value="{{ old('email') }}"
                 required
                 autofocus>
@@ -84,16 +84,6 @@
         </button>
 
     </form>
-
-    {{-- Info default akun --}}
-    @if(config('app.debug'))
-    <div class="mt-3 p-3 rounded" style="background:#F8F9FA; font-size:12px; color:#6c757d;">
-        <div class="fw-600 mb-1">👤 Akun Default (Debug Mode):</div>
-        <div>Owner: owner@resto.com / password123</div>
-        <div>Head: head@resto.com / password123</div>
-        <div>Admin: admin@resto.com / password123</div>
-    </div>
-    @endif
 
     <div class="text-center mt-3">
         <small class="text-muted">

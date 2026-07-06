@@ -655,3 +655,18 @@ body {
 .fs-13  { font-size: 13px; }
 .fs-14  { font-size: 14px; }
 .gap-8  { gap: 8px; }
+
+
+/* TAMBAHAN ATAU PELENGKAP UNTUK LOGO/IMG */
+/* === Override logo & background (permintaan: logo asli + background putih) === */
+.sidebar-logo,
+.sidebar-logo-icon {
+    background-color: #ffffff !important;
+}
+.sidebar-logo-img {
+    height: 42px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+    background-color: transparent;
+}

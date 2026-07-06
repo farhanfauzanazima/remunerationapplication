@@ -130,4 +130,6 @@ Route::middleware('auth.api')->group(function () {
         Route::post('/{id}/reset-password', [HrManagementController::class, 'resetPassword'])->name('hr-management.reset-password');
         Route::delete('/{id}', [HrManagementController::class, 'destroy'])->name('hr-management.destroy');
     });
+
+    Route::post('/distribution/resend/{id}', [DistributionController::class, 'resend'])->name('distribution.resend');
 });

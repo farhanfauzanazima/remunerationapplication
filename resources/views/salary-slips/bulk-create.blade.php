@@ -6,9 +6,14 @@
 
 @push('styles')
 <style>
-    .table-bulk { font-size: 13px; white-space: nowrap; }
-    .table-bulk input { min-width: 70px; }
-    .table-bulk .locked { background: #f1f3f5; }
+    .table-bulk { font-size: 13px; }
+    .table-bulk th, .table-bulk td { padding: 6px 8px; vertical-align: middle; }
+    .table-bulk input {
+        width: 115px;
+        min-width: 115px;
+        text-align: right;
+    }
+    .table-bulk .locked { background: #f1f3f5; text-align: right; }
 </style>
 @endpush
 

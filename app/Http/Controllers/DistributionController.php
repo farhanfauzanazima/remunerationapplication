@@ -60,4 +60,11 @@ class DistributionController extends Controller
 
         return back()->with('success', $response['message']);
     }
+
+    public function resend(string $id)
+    {
+        $response = $this->api->post("/distribution/resend/{$id}", []);
+
+        return back()->with($response['success'] ? 'success' : 'error', $response['message']);
+    }
 }
