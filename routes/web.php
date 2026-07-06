@@ -97,17 +97,16 @@ Route::middleware('auth.api')->group(function () {
 
     // ---------- Distribusi Gaji ----------
     Route::middleware('role:owner,hr')->group(function () {
-    Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
-    Route::post('/distribution/send-bulk', [DistributionController::class, 'sendBulk'])->name('distribution.send-bulk');
-});
+        Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
+        Route::post('/distribution/send-bulk', [DistributionController::class, 'sendBulk'])->name('distribution.send-bulk');
+    });
 
-    // ---------- Laporan (Sesi 11) ----------
+    // ---------- Laporan ----------
     Route::middleware('role:owner,hr')->group(function () {
-        Route::get('/reports',                [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/salary-summary', [ReportController::class, 'salarySummary'])->name('reports.salary-summary');
-        Route::get('/reports/export-pdf',     [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
-        Route::get('/reports/statistics',     [ReportController::class, 'statistics'])->name('reports.statistics');
-        Route::get('/reports/employee/{id}',  [ReportController::class, 'employeeReport'])->name('reports.employee');
+        Route::get('/reports/statistics', [ReportController::class, 'statistics'])->name('reports.statistics');
+        Route::get('/reports/employee/{id}', [ReportController::class, 'employeeReport'])->name('reports.employee');
     });
 
     // ---------- Activity Log — Owner only ----------
