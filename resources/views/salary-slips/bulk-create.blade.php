@@ -6,14 +6,48 @@
 
 @push('styles')
 <style>
-    .table-bulk { font-size: 13px; }
-    .table-bulk th, .table-bulk td { padding: 6px 8px; vertical-align: middle; }
-    .table-bulk input {
+    .table-bulk {
+        font-size: 13px;
+        table-layout: fixed;
+        width: 100%;
+    }
+    .table-bulk th,
+    .table-bulk td {
+        padding: 6px 8px;
+        vertical-align: middle;
+        text-align: center;
         width: 115px;
-        min-width: 115px;
+        overflow-wrap: break-word;
+    }
+    .table-bulk th {
+        text-align: center;
+        vertical-align: middle;
+        white-space: normal;
+    }
+    /* Kolom nama & jabatan boleh sedikit lebih lebar karena isinya teks panjang */
+    .table-bulk th.col-nama,
+    .table-bulk td.col-nama,
+    .table-bulk th.col-jabatan,
+    .table-bulk td.col-jabatan {
+        width: 150px;
+        text-align: left;
+    }
+    .table-bulk th.col-aksi,
+    .table-bulk td.col-aksi {
+        width: 60px;
+    }
+    .table-bulk input {
+        width: 100%;
         text-align: right;
     }
-    .table-bulk .locked { background: #f1f3f5; text-align: right; }
+    .table-bulk .locked {
+        background: #f1f3f5;
+        text-align: right;
+        font-weight: 500;
+    }
+    .table-bulk-wrapper {
+        overflow-x: auto;
+    }
 </style>
 @endpush
 
@@ -67,17 +101,37 @@
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllTetap()">Kosongkan</button>
             </div>
         </div>
-        <div class="card-body table-responsive">
+        <div class="card-body table-bulk-wrapper">
             <table class="table table-bordered table-bulk align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Nama</th><th>Bergabung</th><th>Jabatan</th>
-                        <th>Hari Kerja</th><th>Alfa</th><th>Izin</th><th>Sakit</th><th>Off</th><th>Masuk</th>
-                        <th>Lembur</th><th>Telat</th><th>Harian</th><th>Gaji Pokok</th>
-                        <th>Transport</th><th>T.Jabatan</th><th>BPJS</th><th>T.Masa Kerja</th>
-                        <th>B.Disiplin</th><th>B.Omset</th><th>B.Kinerja</th>
-                        <th>Cashbond</th><th>Tabungan</th><th>THP</th><th>Total</th>
-                        <th>No Rek</th><th>Bank</th><th></th>
+                        <th class="col-nama">Nama</th>
+                        <th>Bergabung</th>
+                        <th class="col-jabatan">Jabatan</th>
+                        <th>Hari Kerja</th>
+                        <th>Alfa</th>
+                        <th>Izin</th>
+                        <th>Sakit</th>
+                        <th>Off</th>
+                        <th>Masuk</th>
+                        <th>Lembur</th>
+                        <th>Telat</th>
+                        <th>Harian</th>
+                        <th>Gaji Pokok</th>
+                        <th>Transport</th>
+                        <th>T. Jabatan</th>
+                        <th>BPJS</th>
+                        <th>T. Masa Kerja</th>
+                        <th>B. Disiplin</th>
+                        <th>B. Omset</th>
+                        <th>B. Kinerja</th>
+                        <th>Cashbond</th>
+                        <th>Tabungan</th>
+                        <th>THP</th>
+                        <th>Total</th>
+                        <th>No Rek</th>
+                        <th>Bank</th>
+                        <th class="col-aksi"></th>
                     </tr>
                 </thead>
                 <tbody id="tetapBody"></tbody>
@@ -98,15 +152,29 @@
                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllPartime()">Kosongkan</button>
             </div>
         </div>
-        <div class="card-body table-responsive">
+        <div class="card-body table-bulk-wrapper">
             <table class="table table-bordered table-bulk align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Nama</th><th>Bergabung</th><th>Jabatan</th>
-                        <th>Hari Kerja</th><th>Full</th><th>Shift</th><th>Reguler</th><th>Sakit</th><th>Off</th>
-                        <th>Tunjangan</th><th>Total Full</th><th>Total Shift</th><th>Total Reguler</th>
-                        <th>Total Transport</th><th>Bonus</th><th>Total Fee</th>
-                        <th>No Rek</th><th>Bank</th><th></th>
+                        <th class="col-nama">Nama</th>
+                        <th>Bergabung</th>
+                        <th class="col-jabatan">Jabatan</th>
+                        <th>Hari Kerja</th>
+                        <th>Full</th>
+                        <th>Shift</th>
+                        <th>Reguler</th>
+                        <th>Sakit</th>
+                        <th>Off</th>
+                        <th>Tunjangan</th>
+                        <th>Total Full</th>
+                        <th>Total Shift</th>
+                        <th>Total Reguler</th>
+                        <th>Total Transport</th>
+                        <th>Bonus</th>
+                        <th>Total Fee</th>
+                        <th>No Rek</th>
+                        <th>Bank</th>
+                        <th class="col-aksi"></th>
                     </tr>
                 </thead>
                 <tbody id="partimeBody"></tbody>
@@ -136,6 +204,41 @@ const addedPartimeIds = new Set();
 function rupiah(n) {
     n = Number(n) || 0;
     return 'Rp' + n.toLocaleString('id-ID');
+}
+
+/* ============ Format Ribuan (titik) untuk input rupiah ============ */
+
+function formatRibuan(value) {
+    value = String(value).replace(/\D/g, '');
+    if (!value) return '';
+    return parseInt(value, 10).toLocaleString('id-ID');
+}
+
+function unformatRibuan(value) {
+    return parseInt(String(value || '0').replace(/\./g, ''), 10) || 0;
+}
+
+// Delegasi event: berlaku juga untuk baris yang ditambahkan setelah halaman dimuat
+document.addEventListener('input', function (e) {
+    if (e.target.classList.contains('rupiah-input')) {
+        const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+        e.target.value = formatRibuan(e.target.value);
+        const newPos = e.target.value.length - cursorFromEnd;
+        e.target.setSelectionRange(newPos, newPos);
+    }
+});
+
+// Kembalikan ke angka polos sesaat sebelum form dikirim ke server
+document.getElementById('bulkForm')?.addEventListener('submit', function () {
+    document.querySelectorAll('.rupiah-input').forEach(el => {
+        el.value = unformatRibuan(el.value);
+    });
+});
+
+function readVal(row, name, isRupiah) {
+    const el = row.querySelector(`[name$="[${name}]"]`) || row.querySelector(`[name*="[${name}]"]`);
+    if (!el) return 0;
+    return isRupiah ? unformatRibuan(el.value) : (parseFloat(el.value) || 0);
 }
 
 function tenureMonths(joinDate) {
@@ -182,36 +285,36 @@ function addRowTetap(emp) {
     const idx = emp.id;
     const tr = document.createElement('tr');
     tr.id = `tetap-row-${idx}`;
+    tr.dataset.joinDate = emp.join_date;
     tr.innerHTML = `
-        <td>${emp.name}<input type="hidden" name="tetap[${idx}][employee_id]" value="${emp.id}"></td>
+        <td class="col-nama">${emp.name}<input type="hidden" name="tetap[${idx}][employee_id]" value="${emp.id}"></td>
         <td>${emp.join_date ? emp.join_date.substring(0,10) : '-'}</td>
-        <td>${emp.position?.name ?? '-'}</td>
+        <td class="col-jabatan">${emp.position?.name ?? '-'}</td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}" onchange="calcTetap(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][alfa]" value="${existing.alfa ?? 0}" onchange="calcTetap(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][izin]" value="${existing.izin ?? 0}" onchange="calcTetap(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][sakit]" value="${existing.sakit ?? 0}" onchange="calcTetap(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][off]" value="${existing.off ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td class="locked text-end" id="tetap-${idx}-masuk">0</td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][lembur]" value="${existing.lembur ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked" id="tetap-${idx}-masuk">0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][lembur]" value="${formatRibuan(existing.lembur ?? 0)}" onchange="calcTetap(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][telat]" value="${existing.telat ?? 0}"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][harian]" value="${existing.harian ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td class="locked text-end" id="tetap-${idx}-gaji_pokok">Rp0</td>
-        <td class="locked text-end" id="tetap-${idx}-transport">Rp0</td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tunjangan_jabatan]" value="${existing.tunjangan_jabatan ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tunjangan_bpjs]" value="${existing.tunjangan_bpjs ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td class="locked text-end" id="tetap-${idx}-masa_kerja">Rp0</td>
-        <td class="locked text-end" id="tetap-${idx}-disiplin">Rp0</td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][bonus_omset]" value="${existing.bonus_omset ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][bonus_kinerja]" value="${existing.bonus_kinerja ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][cashbond]" value="${existing.cashbond ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][tabungan]" value="${existing.tabungan ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td class="locked text-end fw-semibold" id="tetap-${idx}-thp">Rp0</td>
-        <td class="locked text-end fw-semibold" id="tetap-${idx}-total">Rp0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][harian]" value="${formatRibuan(existing.harian ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td class="locked" id="tetap-${idx}-gaji_pokok">Rp0</td>
+        <td class="locked" id="tetap-${idx}-transport">Rp0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][tunjangan_jabatan]" value="${formatRibuan(existing.tunjangan_jabatan ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][tunjangan_bpjs]" value="${formatRibuan(existing.tunjangan_bpjs ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td class="locked" id="tetap-${idx}-masa_kerja">Rp0</td>
+        <td class="locked" id="tetap-${idx}-disiplin">Rp0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][bonus_omset]" value="${formatRibuan(existing.bonus_omset ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][bonus_kinerja]" value="${formatRibuan(existing.bonus_kinerja ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][cashbond]" value="${formatRibuan(existing.cashbond ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][tabungan]" value="${formatRibuan(existing.tabungan ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td class="locked fw-semibold" id="tetap-${idx}-thp">Rp0</td>
+        <td class="locked fw-semibold" id="tetap-${idx}-total">Rp0</td>
         <td>${emp.bank_account_number ?? '-'}</td>
         <td>${emp.bank_name ?? '-'}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowTetap(${idx})"><i class="bi bi-x"></i></button></td>
+        <td class="col-aksi"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowTetap(${idx})"><i class="bi bi-x"></i></button></td>
     `;
-    tr.dataset.joinDate = emp.join_date;
     document.getElementById('tetapBody').appendChild(tr);
     calcTetap(idx);
 }
@@ -225,18 +328,24 @@ function removeRowTetap(idx) {
 function calcTetap(idx) {
     const row = document.getElementById(`tetap-row-${idx}`);
     if (!row) return;
-    const val = name => parseFloat(row.querySelector(`[name="tetap[${idx}][${name}]"]`)?.value) || 0;
+
+    const val = (name, isRupiah = false) => {
+        const el = row.querySelector(`[name="tetap[${idx}][${name}]"]`);
+        if (!el) return 0;
+        return isRupiah ? unformatRibuan(el.value) : (parseFloat(el.value) || 0);
+    };
 
     const masuk = Math.max(0, val('hari_kerja') - val('alfa') - val('izin') - val('sakit') - val('off'));
-    const gajiPokok = val('harian') * masuk;
+    const gajiPokok = val('harian', true) * masuk;
     const transport = (SETTING.transport_tetap || 0) * masuk;
     const disiplin = (SETTING.disiplin_bonus_tetap || 0) * masuk;
     const months = tenureMonths(row.dataset.joinDate);
     const masaKerja = months >= (SETTING.tenure_months_threshold || 0) ? (SETTING.tenure_bonus_amount || 0) : 0;
 
-    const thp = (val('lembur') + gajiPokok + transport + val('tunjangan_jabatan') + val('tunjangan_bpjs')
-        + masaKerja + disiplin + val('bonus_omset') + val('bonus_kinerja')) - (val('cashbond') + val('tabungan'));
-    const total = thp + val('tabungan') + val('cashbond');
+    const thp = (val('lembur', true) + gajiPokok + transport + val('tunjangan_jabatan', true) + val('tunjangan_bpjs', true)
+        + masaKerja + disiplin + val('bonus_omset', true) + val('bonus_kinerja', true))
+        - (val('cashbond', true) + val('tabungan', true));
+    const total = thp + val('tabungan', true) + val('cashbond', true);
 
     document.getElementById(`tetap-${idx}-masuk`).textContent = masuk;
     document.getElementById(`tetap-${idx}-gaji_pokok`).textContent = rupiah(gajiPokok);
@@ -286,25 +395,25 @@ function addRowPartime(emp) {
     const tr = document.createElement('tr');
     tr.id = `partime-row-${idx}`;
     tr.innerHTML = `
-        <td>${emp.name}<input type="hidden" name="partime[${idx}][employee_id]" value="${emp.id}"></td>
+        <td class="col-nama">${emp.name}<input type="hidden" name="partime[${idx}][employee_id]" value="${emp.id}"></td>
         <td>${emp.join_date ? emp.join_date.substring(0,10) : '-'}</td>
-        <td>${emp.position?.name ?? '-'}</td>
+        <td class="col-jabatan">${emp.position?.name ?? '-'}</td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][full]" value="${existing.full ?? 0}" onchange="calcPartime(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][shift]" value="${existing.shift ?? 0}" onchange="calcPartime(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][reguler]" value="${existing.reguler ?? 0}" onchange="calcPartime(${idx})"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][sakit]" value="${existing.sakit ?? 0}"></td>
         <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][off]" value="${existing.off ?? 0}"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][tunjangan]" value="${existing.tunjangan ?? 0}" onchange="calcPartime(${idx})"></td>
-        <td class="locked text-end" id="partime-${idx}-total_full">Rp0</td>
-        <td class="locked text-end" id="partime-${idx}-total_shift">Rp0</td>
-        <td class="locked text-end" id="partime-${idx}-total_reguler">Rp0</td>
-        <td class="locked text-end" id="partime-${idx}-total_transport">Rp0</td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="partime[${idx}][bonus]" value="${existing.bonus ?? 0}" onchange="calcPartime(${idx})"></td>
-        <td class="locked text-end fw-semibold" id="partime-${idx}-total_fee">Rp0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="partime[${idx}][tunjangan]" value="${formatRibuan(existing.tunjangan ?? 0)}" onchange="calcPartime(${idx})"></td>
+        <td class="locked" id="partime-${idx}-total_full">Rp0</td>
+        <td class="locked" id="partime-${idx}-total_shift">Rp0</td>
+        <td class="locked" id="partime-${idx}-total_reguler">Rp0</td>
+        <td class="locked" id="partime-${idx}-total_transport">Rp0</td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="partime[${idx}][bonus]" value="${formatRibuan(existing.bonus ?? 0)}" onchange="calcPartime(${idx})"></td>
+        <td class="locked fw-semibold" id="partime-${idx}-total_fee">Rp0</td>
         <td>${emp.bank_account_number ?? '-'}</td>
         <td>${emp.bank_name ?? '-'}</td>
-        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowPartime(${idx})"><i class="bi bi-x"></i></button></td>
+        <td class="col-aksi"><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeRowPartime(${idx})"><i class="bi bi-x"></i></button></td>
     `;
     document.getElementById('partimeBody').appendChild(tr);
     calcPartime(idx);
@@ -319,13 +428,18 @@ function removeRowPartime(idx) {
 function calcPartime(idx) {
     const row = document.getElementById(`partime-row-${idx}`);
     if (!row) return;
-    const val = name => parseFloat(row.querySelector(`[name="partime[${idx}][${name}]"]`)?.value) || 0;
+
+    const val = (name, isRupiah = false) => {
+        const el = row.querySelector(`[name="partime[${idx}][${name}]"]`);
+        if (!el) return 0;
+        return isRupiah ? unformatRibuan(el.value) : (parseFloat(el.value) || 0);
+    };
 
     const totalFull = (SETTING.rate_full || 0) * val('full');
     const totalShift = (SETTING.rate_shift || 0) * val('shift');
     const totalReguler = (SETTING.rate_reguler || 0) * val('reguler');
     const totalTransport = (SETTING.transport_partime || 0) * (val('full') + val('shift') + val('reguler'));
-    const totalFee = val('tunjangan') + totalFull + totalShift + totalReguler + totalTransport + val('bonus');
+    const totalFee = val('tunjangan', true) + totalFull + totalShift + totalReguler + totalTransport + val('bonus', true);
 
     document.getElementById(`partime-${idx}-total_full`).textContent = rupiah(totalFull);
     document.getElementById(`partime-${idx}-total_shift`).textContent = rupiah(totalShift);
