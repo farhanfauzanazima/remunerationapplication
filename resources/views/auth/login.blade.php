@@ -7,7 +7,7 @@
 
     {{-- Logo --}}
     <div class="auth-logo">
-        <div class="auth-logo-icon">🍽️</div>
+        <img src="{{ asset('storage/logo/logo.png') }}" alt="Logo" style="height:60px;">
         <h1 class="auth-title">Sistem Remunerasi</h1>
         <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
     </div>

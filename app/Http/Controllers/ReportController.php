@@ -38,10 +38,9 @@ class ReportController extends Controller
         $response = $this->api->get('/reports/statistics');
 
         return view('reports.statistics', [
-            'trend' => $response['success'] ? $response['data'] : [],
+            'trend' => $response['success'] ? ($response['data']['overall'] ?? []) : [],
         ]);
     }
-
     public function employeeReport(string $id)
     {
         $response = $this->api->get("/reports/employee/{$id}");
