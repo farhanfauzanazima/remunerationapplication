@@ -14,6 +14,7 @@ use App\Http\Controllers\SalarySlipController;
 use App\Http\Controllers\CategoricalController;
 use App\Http\Controllers\HrManagementController;
 use App\Http\Controllers\DistributionController;
+use App\Http\Controllers\NotificationSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -131,5 +132,12 @@ Route::middleware('auth.api')->group(function () {
         Route::delete('/{id}', [HrManagementController::class, 'destroy'])->name('hr-management.destroy');
     });
 
+    // ---------- Email Resend ----------
     Route::post('/distribution/resend/{id}', [DistributionController::class, 'resend'])->name('distribution.resend');
+
+    // ---------- WhatsApp ----------
+    Route::middleware('role:owner,hr')->group(function () {
+        Route::get('/notification-settings', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
+        Route::put('/notification-settings', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
+    });
 });

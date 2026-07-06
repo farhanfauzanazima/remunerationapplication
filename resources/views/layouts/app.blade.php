@@ -55,6 +55,12 @@
                 Kategorikal
             </a>
 
+            <a href="{{ route('notification-settings.index') }}"
+                class="sidebar-item {{ request()->routeIs('notification-settings.*') ? 'active' : '' }}">
+                <span class="sidebar-icon"><i class="bi bi-whatsapp"></i></span>
+                Template Pesan WA
+            </a>
+
             <a href="{{ route('branches.index') }}"
                 class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
                 <span class="sidebar-icon"><i class="bi bi-shop"></i></span>
