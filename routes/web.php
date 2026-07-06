@@ -13,6 +13,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalarySlipController;
 use App\Http\Controllers\CategoricalController;
 use App\Http\Controllers\HrManagementController;
+use App\Http\Controllers\DistributionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -94,12 +95,11 @@ Route::middleware('auth.api')->group(function () {
         Route::post('/salary-slips/{type}/{id}/generate-link', [SalarySlipController::class, 'generateLink'])->name('salary-slips.generate-link')->whereIn('type', ['tetap', 'partime']);
     });
 
-    // ---------- Distribusi Gaji — ganti nama dari Email (Sesi 10) ----------
+    // ---------- Distribusi Gaji ----------
     Route::middleware('role:owner,hr')->group(function () {
-        Route::get('/distribution',             [EmailController::class, 'index'])->name('distribution.index');
-        Route::get('/distribution/send-bulk',   [EmailController::class, 'showSendBulk'])->name('distribution.send-bulk');
-        Route::post('/distribution/send-bulk',  [EmailController::class, 'sendBulk'])->name('distribution.send-bulk.post');
-    });
+    Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
+    Route::post('/distribution/send-bulk', [DistributionController::class, 'sendBulk'])->name('distribution.send-bulk');
+});
 
     // ---------- Laporan (Sesi 11) ----------
     Route::middleware('role:owner,hr')->group(function () {
