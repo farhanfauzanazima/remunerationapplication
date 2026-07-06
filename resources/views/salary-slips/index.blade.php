@@ -48,7 +48,11 @@
         </form>
     </div>
 </div>
-
+<div class="d-flex justify-content-end mb-3">
+    <a href="{{ route('salary-slips.bulk-create') }}" class="btn btn-primary">
+        <i class="bi bi-collection-fill"></i> Input Massal Slip Gaji
+    </a>
+</div>
 <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabTetap">Karyawan Tetap ({{ $pagination['tetap']['total'] ?? 0 }})</button></li>
     <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPartime">Tim Partime ({{ $pagination['partime']['total'] ?? 0 }})</button></li>
