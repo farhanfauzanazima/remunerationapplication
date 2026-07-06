@@ -119,4 +119,25 @@ class SalarySlipController extends Controller
 
         return back()->with($response['success'] ? 'success' : 'error', $response['message']);
     }
+
+    public function previewPdf(string $type, string $id)
+    {
+        return $this->api->stream("/salary-slips/{$type}/{$id}/preview-pdf");
+    }
+
+    public function downloadPdf(string $type, string $id)
+    {
+        return $this->api->download("/salary-slips/{$type}/{$id}/download-pdf");
+    }
+
+    public function generateLink(string $type, string $id)
+    {
+        $response = $this->api->post("/salary-slips/{$type}/{$id}/generate-link", []);
+
+        if (!$response['success']) {
+            return back()->with('error', $response['message'] ?? 'Gagal membuat link publik');
+        }
+
+        return back()->with('success', 'Link publik: ' . $response['data']['url']);
+    }
 }

@@ -89,6 +89,9 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/salary-slips/{type}/{id}/edit', [SalarySlipController::class, 'edit'])->name('salary-slips.edit')->whereIn('type', ['tetap', 'partime']);
         Route::put('/salary-slips/{type}/{id}', [SalarySlipController::class, 'update'])->name('salary-slips.update')->whereIn('type', ['tetap', 'partime']);
         Route::delete('/salary-slips/{type}/{id}', [SalarySlipController::class, 'destroy'])->name('salary-slips.destroy')->whereIn('type', ['tetap', 'partime']);
+        Route::get('/salary-slips/{type}/{id}/preview-pdf', [SalarySlipController::class, 'previewPdf'])->name('salary-slips.preview-pdf')->whereIn('type', ['tetap', 'partime']);
+        Route::get('/salary-slips/{type}/{id}/download-pdf', [SalarySlipController::class, 'downloadPdf'])->name('salary-slips.download-pdf')->whereIn('type', ['tetap', 'partime']);
+        Route::post('/salary-slips/{type}/{id}/generate-link', [SalarySlipController::class, 'generateLink'])->name('salary-slips.generate-link')->whereIn('type', ['tetap', 'partime']);
     });
 
     // ---------- Distribusi Gaji — ganti nama dari Email (Sesi 10) ----------
