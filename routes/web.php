@@ -140,4 +140,9 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/notification-settings', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
         Route::put('/notification-settings', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
     });
+
+    // ---------- Laporan Keuangan ----------
+    Route::get('/reports/finance-summary', [ReportController::class, 'financeSummary'])->name('reports.finance-summary');
+    Route::get('/reports/finance-summary/preview-pdf', [ReportController::class, 'financeSummaryPreviewPdf'])->name('reports.finance-summary.preview-pdf');
+    Route::get('/reports/finance-summary/download-pdf', [ReportController::class, 'financeSummaryDownloadPdf'])->name('reports.finance-summary.download-pdf');
 });

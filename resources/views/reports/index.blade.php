@@ -23,5 +23,14 @@
             </div></div>
         </a>
     </div>
+    <div class="col-md-6">
+        <a href="{{ route('reports.finance-summary') }}" class="text-decoration-none">
+            <div class="card h-100"><div class="card-body">
+                <i class="bi bi-file-earmark-pdf-fill fs-2 text-danger"></i>
+                <h5 class="mt-2">Laporan Slip Gaji untuk Tim Keuangan</h5>
+                <p class="text-muted mb-0">Daftar lengkap seluruh karyawan tetap & partime per periode, siap unduh PDF untuk diserahkan ke keuangan.</p>
+            </div></div>
+        </a>
+    </div>
 </div>
 @endsection
