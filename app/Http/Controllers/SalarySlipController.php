@@ -15,12 +15,20 @@ class SalarySlipController extends Controller
         $branches = $this->api->get('/branches');
 
         $bulkData = null;
+        $selectedPeriodData = null;
+
         if ($request->filled('payroll_period_id') && $request->filled('branch_id')) {
             $response = $this->api->get('/salary-slips/bulk-data', [
                 'payroll_period_id' => $request->input('payroll_period_id'),
                 'branch_id' => $request->input('branch_id'),
             ]);
             $bulkData = $response['success'] ? $response['data'] : null;
+
+            // Cari data periode yang dipilih (butuh month & year untuk kalkulasi live di JS)
+            if ($periods['success']) {
+                $selectedPeriodData = collect($periods['data'])
+                    ->firstWhere('id', (int) $request->input('payroll_period_id'));
+            }
         }
 
         return view('salary-slips.bulk-create', [
@@ -29,6 +37,7 @@ class SalarySlipController extends Controller
             'selectedPeriod' => $request->input('payroll_period_id'),
             'selectedBranch' => $request->input('branch_id'),
             'bulkData' => $bulkData,
+            'selectedPeriodData' => $selectedPeriodData,
         ]);
     }
 

@@ -197,6 +197,7 @@
 const SETTING = @json($bulkData['setting'] ?? []);
 const EMPLOYEES_TETAP = @json($bulkData['employees_tetap'] ?? []);
 const EMPLOYEES_PARTIME = @json($bulkData['employees_partime'] ?? []);
+const SELECTED_PERIOD = @json($selectedPeriodData ?? null);
 
 const addedTetapIds = new Set();
 const addedPartimeIds = new Set();
@@ -243,8 +244,19 @@ function readVal(row, name, isRupiah) {
 
 function tenureMonths(joinDate) {
     const start = new Date(joinDate);
-    const now = new Date();
-    return (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
+
+    // Acuan masa kerja HARUS akhir bulan periode yang sedang diinput,
+    // BUKAN tanggal hari ini saat HR membuka form — supaya konsisten
+    // dengan kalkulasi backend (SalaryCalculationService::calculateTetap).
+    if (!SELECTED_PERIOD) {
+        return 0; // jaga-jaga kalau periode belum termuat
+    }
+
+    // periodEnd = akhir bulan periode (contoh: periode Mei -> 31 Mei)
+    const periodEnd = new Date(SELECTED_PERIOD.year, SELECTED_PERIOD.month, 0);
+
+    return (periodEnd.getFullYear() - start.getFullYear()) * 12
+        + (periodEnd.getMonth() - start.getMonth());
 }
 
 /* ============ KARYAWAN TETAP ============ */
