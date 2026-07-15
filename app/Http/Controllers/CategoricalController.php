@@ -24,6 +24,7 @@ class CategoricalController extends Controller
             'transport_tetap', 'transport_partime',
             'tenure_months_threshold', 'tenure_bonus_amount',
             'disiplin_bonus_tetap', 'rate_full', 'rate_shift', 'rate_reguler',
+            'lembur_1_2_jam', 'lembur_3_4_jam', 'lembur_5_jam',
         ]));
 
         return back()->with($response['success'] ? 'success' : 'error', $response['message']);

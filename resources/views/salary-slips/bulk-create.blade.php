@@ -113,11 +113,20 @@
                         <th>Izin</th>
                         <th>Sakit</th>
                         <th>Off</th>
+                        <th>Hari Shift</th>
+                        <th>Hari Full</th>
+                        <th>Hari Parsial</th>
                         <th>Masuk</th>
-                        <th>Lembur</th>
-                        <th>Telat</th>
-                        <th>Harian</th>
+                        <th>Nominal Shift</th>
+                        <th>Nominal Full</th>
+                        <th>Nominal Parsial</th>
+                        <th>Total Shift</th>
+                        <th>Total Full</th>
+                        <th>Total Parsial</th>
                         <th>Gaji Pokok</th>
+                        <th>Jam Lembur</th>
+                        <th>Total Lembur</th>
+                        <th>Telat</th>
                         <th>Transport</th>
                         <th>T. Jabatan</th>
                         <th>BPJS</th>
@@ -302,16 +311,25 @@ function addRowTetap(emp) {
         <td class="col-nama">${emp.name}<input type="hidden" name="tetap[${idx}][employee_id]" value="${emp.id}"></td>
         <td>${emp.join_date ? emp.join_date.substring(0,10) : '-'}</td>
         <td class="col-jabatan">${emp.position?.name ?? '-'}</td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][alfa]" value="${existing.alfa ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][izin]" value="${existing.izin ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][sakit]" value="${existing.sakit ?? 0}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][off]" value="${existing.off ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_kerja]" value="${existing.hari_kerja ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][alfa]" value="${existing.alfa ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][izin]" value="${existing.izin ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][sakit]" value="${existing.sakit ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][off]" value="${existing.off ?? 0}"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_shift]" value="${existing.hari_shift ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_full]" value="${existing.hari_full ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][hari_parsial]" value="${existing.hari_parsial ?? 0}" onchange="calcTetap(${idx})"></td>
         <td class="locked" id="tetap-${idx}-masuk">0</td>
-        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][lembur]" value="${formatRibuan(existing.lembur ?? 0)}" onchange="calcTetap(${idx})"></td>
-        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][telat]" value="${existing.telat ?? 0}"></td>
-        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][harian]" value="${formatRibuan(existing.harian ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][nominal_shift]" value="${formatRibuan(existing.nominal_shift ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][nominal_full]" value="${formatRibuan(existing.nominal_full ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][nominal_parsial]" value="${formatRibuan(existing.nominal_parsial ?? 0)}" onchange="calcTetap(${idx})"></td>
+        <td class="locked" id="tetap-${idx}-total_shift">Rp0</td>
+        <td class="locked" id="tetap-${idx}-total_full">Rp0</td>
+        <td class="locked" id="tetap-${idx}-total_parsial">Rp0</td>
         <td class="locked" id="tetap-${idx}-gaji_pokok">Rp0</td>
+        <td><input type="number" min="0" max="5" class="form-control form-control-sm" name="tetap[${idx}][jam_lembur]" value="${existing.jam_lembur ?? 0}" onchange="calcTetap(${idx})"></td>
+        <td class="locked" id="tetap-${idx}-total_lembur">Rp0</td>
+        <td><input type="number" min="0" class="form-control form-control-sm" name="tetap[${idx}][telat]" value="${existing.telat ?? 0}" onchange="calcTetap(${idx})"></td>
         <td class="locked" id="tetap-${idx}-transport">Rp0</td>
         <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][tunjangan_jabatan]" value="${formatRibuan(existing.tunjangan_jabatan ?? 0)}" onchange="calcTetap(${idx})"></td>
         <td><input type="text" inputmode="numeric" class="form-control form-control-sm rupiah-input" name="tetap[${idx}][tunjangan_bpjs]" value="${formatRibuan(existing.tunjangan_bpjs ?? 0)}" onchange="calcTetap(${idx})"></td>
@@ -347,20 +365,52 @@ function calcTetap(idx) {
         return isRupiah ? unformatRibuan(el.value) : (parseFloat(el.value) || 0);
     };
 
-    const masuk = Math.max(0, val('hari_kerja') - val('alfa') - val('izin') - val('sakit') - val('off'));
-    const gajiPokok = val('harian', true) * masuk;
+    const hariShift = val('hari_shift');
+    const hariFull = val('hari_full');
+    const hariParsial = val('hari_parsial');
+    const masuk = hariShift + hariFull + hariParsial;
+
+    const totalShift = hariShift * val('nominal_shift', true);
+    const totalFull = hariFull * val('nominal_full', true);
+    const totalParsial = hariParsial * val('nominal_parsial', true);
+    const gajiPokok = totalShift + totalFull + totalParsial;
+
+    // Batasi input Telat agar tidak melebihi Masuk (validasi juga tetap dilakukan di backend)
+    const telatInput = row.querySelector(`[name="tetap[${idx}][telat]"]`);
+    telatInput.max = masuk;
+    let telat = val('telat');
+    if (telat > masuk) {
+        telat = masuk;
+        telatInput.value = masuk;
+    }
+
+    // Lembur: tabel flat per tier (BUKAN dikali jam), maksimal 5 jam
+    let jamLembur = val('jam_lembur');
+    if (jamLembur > 5) {
+        jamLembur = 5;
+        row.querySelector(`[name="tetap[${idx}][jam_lembur]"]`).value = 5;
+    }
+    let totalLembur = 0;
+    if (jamLembur >= 5) totalLembur = SETTING.lembur_5_jam || 0;
+    else if (jamLembur >= 3) totalLembur = SETTING.lembur_3_4_jam || 0;
+    else if (jamLembur >= 1) totalLembur = SETTING.lembur_1_2_jam || 0;
+
     const transport = (SETTING.transport_tetap || 0) * masuk;
-    const disiplin = (SETTING.disiplin_bonus_tetap || 0) * masuk;
+    const disiplin = Math.max(0, (SETTING.disiplin_bonus_tetap || 0) * (masuk - telat));
     const months = tenureMonths(row.dataset.joinDate);
     const masaKerja = months >= (SETTING.tenure_months_threshold || 0) ? (SETTING.tenure_bonus_amount || 0) : 0;
 
-    const thp = (val('lembur', true) + gajiPokok + transport + val('tunjangan_jabatan', true) + val('tunjangan_bpjs', true)
+    const thp = (totalLembur + gajiPokok + transport + val('tunjangan_jabatan', true) + val('tunjangan_bpjs', true)
         + masaKerja + disiplin + val('bonus_omset', true) + val('bonus_kinerja', true))
         - (val('cashbond', true) + val('tabungan', true));
     const total = thp + val('tabungan', true) + val('cashbond', true);
 
     document.getElementById(`tetap-${idx}-masuk`).textContent = masuk;
+    document.getElementById(`tetap-${idx}-total_shift`).textContent = rupiah(totalShift);
+    document.getElementById(`tetap-${idx}-total_full`).textContent = rupiah(totalFull);
+    document.getElementById(`tetap-${idx}-total_parsial`).textContent = rupiah(totalParsial);
     document.getElementById(`tetap-${idx}-gaji_pokok`).textContent = rupiah(gajiPokok);
+    document.getElementById(`tetap-${idx}-total_lembur`).textContent = rupiah(totalLembur);
     document.getElementById(`tetap-${idx}-transport`).textContent = rupiah(transport);
     document.getElementById(`tetap-${idx}-masa_kerja`).textContent = rupiah(masaKerja);
     document.getElementById(`tetap-${idx}-disiplin`).textContent = rupiah(disiplin);

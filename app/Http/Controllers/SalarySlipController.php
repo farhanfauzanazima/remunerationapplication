@@ -108,8 +108,27 @@ class SalarySlipController extends Controller
     public function update(Request $request, string $type, string $id)
     {
         $fields = $type === 'tetap'
-            ? ['hari_kerja', 'alfa', 'izin', 'sakit', 'off', 'lembur', 'telat', 'harian',
-               'tunjangan_jabatan', 'tunjangan_bpjs', 'bonus_omset', 'bonus_kinerja', 'cashbond', 'tabungan']
+            ? [
+                'hari_kerja',
+                'alfa',
+                'izin',
+                'sakit',
+                'off',
+                'hari_shift',
+                'hari_full',
+                'hari_parsial',
+                'nominal_shift',
+                'nominal_full',
+                'nominal_parsial',
+                'jam_lembur',
+                'telat',
+                'tunjangan_jabatan',
+                'tunjangan_bpjs',
+                'bonus_omset',
+                'bonus_kinerja',
+                'cashbond',
+                'tabungan'
+            ]
             : ['hari_kerja', 'full', 'shift', 'reguler', 'sakit', 'off', 'tunjangan', 'bonus'];
 
         $response = $this->api->put("/salary-slips/{$type}/{$id}", $request->only($fields));

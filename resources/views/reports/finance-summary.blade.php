@@ -65,9 +65,11 @@
         <table class="table table-bordered table-sm" style="font-size: 12px; white-space: nowrap;">
             <thead class="table-light">
                 <tr>
-                    <th>Nama</th><th>Bergabung</th><th>Jabatan</th><th>Hari Kerja</th><th>Alfa</th><th>Izin</th><th>Sakit</th><th>Off</th><th>Masuk</th>
-                    <th>Lembur</th><th>Telat</th><th>Harian</th><th>Gaji Pokok</th><th>Transport</th><th>T.Jabatan</th><th>BPJS</th>
-                    <th>T.Masa Kerja</th><th>B.Disiplin</th><th>B.Omset</th><th>B.Kinerja</th><th>Cashbond</th><th>Tabungan</th>
+                    <th>Nama</th><th>Bergabung</th><th>Jabatan</th>
+                    <th>Total Shift</th><th>Total Full</th><th>Total Parsial</th><th>Gaji Pokok</th>
+                    <th>Jam Lembur</th><th>Total Lembur</th><th>Telat</th>
+                    <th>Transport</th><th>T.Jabatan</th><th>BPJS</th><th>T.Masa Kerja</th>
+                    <th>B.Disiplin</th><th>B.Omset</th><th>B.Kinerja</th><th>Cashbond</th><th>Tabungan</th>
                     <th>THP</th><th>Total</th><th>No Rek</th><th>Atas Nama</th><th>Bank</th>
                 </tr>
             </thead>
@@ -77,18 +79,30 @@
                     <td>{{ $slip['employee']['name'] }}</td>
                     <td>{{ \Carbon\Carbon::parse($slip['employee']['join_date'])->format('d-m-Y') }}</td>
                     <td>{{ $slip['employee']['position']['name'] ?? '-' }}</td>
-                    <td>{{ $slip['hari_kerja'] }}</td><td>{{ $slip['alfa'] }}</td><td>{{ $slip['izin'] }}</td><td>{{ $slip['sakit'] }}</td><td>{{ $slip['off'] }}</td><td>{{ $slip['masuk'] }}</td>
-                    <td>{{ number_format($slip['lembur'],0,',','.') }}</td><td>{{ $slip['telat'] }}</td><td>{{ number_format($slip['harian'],0,',','.') }}</td>
-                    <td>{{ number_format($slip['gaji_pokok'],0,',','.') }}</td><td>{{ number_format($slip['tunjangan_transport'],0,',','.') }}</td>
-                    <td>{{ number_format($slip['tunjangan_jabatan'],0,',','.') }}</td><td>{{ number_format($slip['tunjangan_bpjs'],0,',','.') }}</td>
-                    <td>{{ number_format($slip['tunjangan_masa_kerja'],0,',','.') }}</td><td>{{ number_format($slip['bonus_disiplin'],0,',','.') }}</td>
-                    <td>{{ number_format($slip['bonus_omset'],0,',','.') }}</td><td>{{ number_format($slip['bonus_kinerja'],0,',','.') }}</td>
-                    <td>{{ number_format($slip['cashbond'],0,',','.') }}</td><td>{{ number_format($slip['tabungan'],0,',','.') }}</td>
-                    <td><strong>{{ number_format($slip['thp'],0,',','.') }}</strong></td><td><strong>{{ number_format($slip['total_gaji'],0,',','.') }}</strong></td>
-                    <td>{{ $slip['employee']['bank_account_number'] ?? '-' }}</td><td>{{ $slip['employee']['bank_account_name'] ?? '-' }}</td><td>{{ $slip['employee']['bank_name'] ?? '-' }}</td>
+                    <td>{{ number_format($slip['total_shift'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['total_full'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['total_parsial'],0,',','.') }}</td>
+                    <td><strong>{{ number_format($slip['gaji_pokok'],0,',','.') }}</strong></td>
+                    <td>{{ $slip['jam_lembur'] }}</td>
+                    <td>{{ number_format($slip['lembur'],0,',','.') }}</td>
+                    <td>{{ $slip['telat'] }}</td>
+                    <td>{{ number_format($slip['tunjangan_transport'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['tunjangan_jabatan'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['tunjangan_bpjs'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['tunjangan_masa_kerja'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['bonus_disiplin'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['bonus_omset'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['bonus_kinerja'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['cashbond'],0,',','.') }}</td>
+                    <td>{{ number_format($slip['tabungan'],0,',','.') }}</td>
+                    <td><strong>{{ number_format($slip['thp'],0,',','.') }}</strong></td>
+                    <td><strong>{{ number_format($slip['total_gaji'],0,',','.') }}</strong></td>
+                    <td>{{ $slip['employee']['bank_account_number'] ?? '-' }}</td>
+                    <td>{{ $slip['employee']['bank_account_name'] ?? '-' }}</td>
+                    <td>{{ $slip['employee']['bank_name'] ?? '-' }}</td>
                 </tr>
                 @empty
-                <tr><td colspan="27" class="text-center text-muted">Tidak ada data</td></tr>
+                <tr><td colspan="24" class="text-center text-muted">Tidak ada data</td></tr>
                 @endforelse
             </tbody>
         </table>

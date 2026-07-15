@@ -38,8 +38,21 @@
                             <td class="text-end">{{ $slip['hari_kerja'] }} / {{ $slip['masuk'] }}</td>
                         </tr>
                         <tr>
-                            <td>Gaji Pokok</td>
-                            <td class="text-end">Rp{{ number_format($slip['gaji_pokok'], 0, ',', '.') }}</td>
+                            <td>Total Shift</td>
+                            <td class="text-end">Rp{{ number_format($slip['total_shift'], 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Full</td>
+                            <td class="text-end">Rp{{ number_format($slip['total_full'], 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Parsial</td>
+                            <td class="text-end">Rp{{ number_format($slip['total_parsial'], 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gaji Pokok</strong></td>
+                            <td class="text-end"><strong>Rp{{ number_format($slip['gaji_pokok'], 0, ',', '.') }}</strong>
+                            </td>
                         </tr>
                         <tr>
                             <td>Tunjangan Transport</td>
@@ -70,8 +83,13 @@
                             <td class="text-end">Rp{{ number_format($slip['bonus_kinerja'], 0, ',', '.') }}</td>
                         </tr>
                         <tr>
-                            <td>Lembur</td>
-                            <td class="text-end">Rp{{ number_format($slip['lembur'], 0, ',', '.') }}</td>
+                            <td>Jam Lembur / Total Lembur</td>
+                            <td class="text-end">{{ $slip['jam_lembur'] }} jam /
+                                Rp{{ number_format($slip['lembur'], 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <td>Telat</td>
+                            <td class="text-end">{{ $slip['telat'] }} hari</td>
                         </tr>
                         <tr>
                             <td>Tabungan Karyawan</td>
