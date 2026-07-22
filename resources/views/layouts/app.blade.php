@@ -108,8 +108,12 @@
                 Laporan
             </a>
 
-            {{-- SISTEM — Owner only --}}
-            @if (session('user.role') === 'owner')
+            @php
+                $isElevated =
+                    session('user.role') === 'owner' || (session('user.role') === 'hr' && session('user.is_super_hr'));
+            @endphp
+
+            @if ($isElevated)
                 <div class="sidebar-section-label">Sistem</div>
 
                 <a href="{{ route('hr-management.index') }}"
@@ -117,7 +121,9 @@
                     <span class="sidebar-icon"><i class="bi bi-person-lines-fill"></i></span>
                     Manajemen HR
                 </a>
+            @endif
 
+            @if (session('user.role') === 'owner')
                 <a href="{{ route('activity-logs.index') }}"
                     class="sidebar-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                     <span class="sidebar-icon"><i class="bi bi-clock-history"></i></span>

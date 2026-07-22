@@ -3,18 +3,16 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CategoricalController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\EmailController;
+use App\Http\Controllers\DistributionController;
 use App\Http\Controllers\EmployeeController;
-use App\Http\Controllers\PdfController;
+use App\Http\Controllers\HrManagementController;
+use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SalarySlipController;
-use App\Http\Controllers\CategoricalController;
-use App\Http\Controllers\HrManagementController;
-use App\Http\Controllers\DistributionController;
-use App\Http\Controllers\NotificationSettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -41,9 +39,9 @@ Route::middleware('auth.api')->group(function () {
     Route::put('/profile',          [AuthController::class, 'updateProfile'])->name('profile.update');
     Route::post('/change-password', [AuthController::class, 'changePassword'])->name('profile.change-password');
 
-    // ---------- Cabang — baca: owner & hr, tulis: owner only ----------
+    // ---------- Cabang — baca: owner & hr, tulis: Owner & Super HR ----------
     Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
-    Route::middleware('role:owner')->group(function () {
+    Route::middleware('elevated')->group(function () {
         Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
         Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
         Route::get('/branches/{id}/edit', [BranchController::class, 'edit'])->name('branches.edit');
@@ -57,12 +55,7 @@ Route::middleware('auth.api')->group(function () {
     Route::put('/positions/{id}', [PositionController::class, 'update'])->name('positions.update');
     Route::delete('/positions/{id}', [PositionController::class, 'destroy'])->name('positions.destroy');
 
-    // ====================================================================
-    // BELUM DIROMBAK — placeholder, role sudah benar (owner,hr).
-    // Tampilan/form akan disesuaikan field baru di sesi terkait.
-    // ====================================================================
-
-    // ---------- Karyawan (Sesi 5) ----------
+    // ---------- Karyawan ----------
     Route::middleware('role:owner,hr')->group(function () {
         Route::get('/employees',           [EmployeeController::class, 'index'])->name('employees.index');
         Route::get('/employees/create',    [EmployeeController::class, 'create'])->name('employees.create');
@@ -72,7 +65,7 @@ Route::middleware('auth.api')->group(function () {
         Route::delete('/employees/{id}',   [EmployeeController::class, 'destroy'])->name('employees.destroy');
     });
 
-    // ---------- Periode (Sesi 6) ----------
+    // ---------- Periode ----------
     Route::middleware('role:owner,hr')->group(function () {
         Route::get('/periods',           [PeriodController::class, 'index'])->name('periods.index');
         Route::get('/periods/create',    [PeriodController::class, 'create'])->name('periods.create');
@@ -82,9 +75,10 @@ Route::middleware('auth.api')->group(function () {
         Route::delete('/periods/{id}',   [PeriodController::class, 'destroy'])->name('periods.destroy');
     });
 
-    // ---------- Slip Gaji (Sesi 7 & 8) ----------
+    // ---------- Slip Gaji ----------
     Route::middleware('role:owner,hr')->group(function () {
         Route::get('/salary-slips', [SalarySlipController::class, 'index'])->name('salary-slips.index');
+        Route::get('/salary-slips/create', [SalarySlipController::class, 'create'])->name('salary-slips.create');
         Route::get('/salary-slips/bulk-create', [SalarySlipController::class, 'bulkCreate'])->name('salary-slips.bulk-create');
         Route::post('/salary-slips/bulk-generate', [SalarySlipController::class, 'bulkStore'])->name('salary-slips.bulk-generate');
         Route::get('/salary-slips/{type}/{id}', [SalarySlipController::class, 'show'])->name('salary-slips.show')->whereIn('type', ['tetap', 'partime']);
@@ -100,6 +94,7 @@ Route::middleware('auth.api')->group(function () {
     Route::middleware('role:owner,hr')->group(function () {
         Route::get('/distribution', [DistributionController::class, 'index'])->name('distribution.index');
         Route::post('/distribution/send-bulk', [DistributionController::class, 'sendBulk'])->name('distribution.send-bulk');
+        Route::post('/distribution/resend/{id}', [DistributionController::class, 'resend'])->name('distribution.resend');
     });
 
     // ---------- Laporan ----------
@@ -108,6 +103,11 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/reports/salary-summary', [ReportController::class, 'salarySummary'])->name('reports.salary-summary');
         Route::get('/reports/statistics', [ReportController::class, 'statistics'])->name('reports.statistics');
         Route::get('/reports/employee/{id}', [ReportController::class, 'employeeReport'])->name('reports.employee');
+
+        // Laporan Keuangan
+        Route::get('/reports/finance-summary', [ReportController::class, 'financeSummary'])->name('reports.finance-summary');
+        Route::get('/reports/finance-summary/preview-pdf', [ReportController::class, 'financeSummaryPreviewPdf'])->name('reports.finance-summary.preview-pdf');
+        Route::get('/reports/finance-summary/download-pdf', [ReportController::class, 'financeSummaryDownloadPdf'])->name('reports.finance-summary.download-pdf');
     });
 
     // ---------- Activity Log — Owner only ----------
@@ -116,15 +116,12 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
     });
 
-    Route::get('/salary-slips/create', [SalarySlipController::class, 'create'])
-        ->name('salary-slips.create');
-
     // ---------- Kategorikal — owner & hr ----------
     Route::get('/categorical', [CategoricalController::class, 'index'])->name('categorical.index');
     Route::put('/categorical', [CategoricalController::class, 'update'])->name('categorical.update');
 
-    // ---------- Manajemen HR — Owner only ----------
-    Route::middleware('role:owner')->prefix('hr-management')->group(function () {
+    // ---------- Manajemen HR — Owner & Super HR ----------
+    Route::middleware('elevated')->prefix('hr-management')->group(function () {
         Route::get('/', [HrManagementController::class, 'index'])->name('hr-management.index');
         Route::post('/', [HrManagementController::class, 'store'])->name('hr-management.store');
         Route::put('/{id}', [HrManagementController::class, 'update'])->name('hr-management.update');
@@ -132,17 +129,9 @@ Route::middleware('auth.api')->group(function () {
         Route::delete('/{id}', [HrManagementController::class, 'destroy'])->name('hr-management.destroy');
     });
 
-    // ---------- Email Resend ----------
-    Route::post('/distribution/resend/{id}', [DistributionController::class, 'resend'])->name('distribution.resend');
-
-    // ---------- WhatsApp ----------
+    // ---------- Template Pesan WhatsApp — owner & hr ----------
     Route::middleware('role:owner,hr')->group(function () {
         Route::get('/notification-settings', [NotificationSettingController::class, 'index'])->name('notification-settings.index');
         Route::put('/notification-settings', [NotificationSettingController::class, 'update'])->name('notification-settings.update');
     });
-
-    // ---------- Laporan Keuangan ----------
-    Route::get('/reports/finance-summary', [ReportController::class, 'financeSummary'])->name('reports.finance-summary');
-    Route::get('/reports/finance-summary/preview-pdf', [ReportController::class, 'financeSummaryPreviewPdf'])->name('reports.finance-summary.preview-pdf');
-    Route::get('/reports/finance-summary/download-pdf', [ReportController::class, 'financeSummaryDownloadPdf'])->name('reports.finance-summary.download-pdf');
 });

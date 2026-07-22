@@ -5,8 +5,12 @@
 @section('page-subtitle', 'Kelola daftar cabang restoran')
 
 @section('content')
+@php
+    $isElevated = session('user.role') === 'owner' || (session('user.role') === 'hr' && session('user.is_super_hr'));
+@endphp
+
 <div class="d-flex justify-content-end mb-3">
-    @if(session('user.role') === 'owner')
+    @if($isElevated)
         <a href="{{ route('branches.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Tambah Cabang
         </a>
@@ -22,7 +26,7 @@
                     <th>Alamat</th>
                     <th>Telepon</th>
                     <th>Jumlah Karyawan</th>
-                    @if(session('user.role') === 'owner')
+                    @if($isElevated)
                         <th class="text-end">Aksi</th>
                     @endif
                 </tr>
@@ -34,7 +38,7 @@
                     <td>{{ $branch['address'] ?? '-' }}</td>
                     <td>{{ $branch['phone'] ?? '-' }}</td>
                     <td>{{ $branch['employees_count'] ?? 0 }}</td>
-                    @if(session('user.role') === 'owner')
+                    @if($isElevated)
                     <td class="text-end">
                         <a href="{{ route('branches.edit', $branch['id']) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                         <form action="{{ route('branches.destroy', $branch['id']) }}" method="POST" class="d-inline" onsubmit="return confirmDelete(event)">
@@ -45,7 +49,7 @@
                     @endif
                 </tr>
                 @empty
-                <tr><td colspan="5" class="text-center text-muted">Belum ada data cabang</td></tr>
+                <tr><td colspan="{{ $isElevated ? 5 : 4 }}" class="text-center text-muted">Belum ada data cabang</td></tr>
                 @endforelse
             </tbody>
         </table>
