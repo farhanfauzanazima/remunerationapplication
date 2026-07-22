@@ -108,6 +108,7 @@ Route::middleware('auth.api')->group(function () {
         Route::get('/reports/finance-summary', [ReportController::class, 'financeSummary'])->name('reports.finance-summary');
         Route::get('/reports/finance-summary/preview-pdf', [ReportController::class, 'financeSummaryPreviewPdf'])->name('reports.finance-summary.preview-pdf');
         Route::get('/reports/finance-summary/download-pdf', [ReportController::class, 'financeSummaryDownloadPdf'])->name('reports.finance-summary.download-pdf');
+        Route::get('/reports/finance-summary/download-excel', [ReportController::class, 'financeSummaryDownloadExcel'])->name('reports.finance-summary.download-excel');
     });
 
     // ---------- Activity Log — Owner only ----------

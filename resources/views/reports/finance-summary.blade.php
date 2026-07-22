@@ -36,7 +36,10 @@
         <i class="bi bi-eye"></i> Preview PDF
     </a>
     <a href="{{ route('reports.finance-summary.download-pdf', $filters) }}" class="btn btn-success">
-        <i class="bi bi-download"></i> Download PDF
+        <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+    </a>
+    <a href="{{ route('reports.finance-summary.download-excel', $filters) }}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-excel-fill"></i> Download Excel
     </a>
 </div>
 

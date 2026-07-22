@@ -78,4 +78,9 @@ class ReportController extends Controller
     {
         return $this->api->download('/reports/finance-summary/download-pdf?' . http_build_query($request->only('payroll_period_id', 'branch_id')));
     }
+
+    public function financeSummaryDownloadExcel(Request $request)
+    {
+        return $this->api->download('/reports/finance-summary/download-excel?' . http_build_query($request->only('payroll_period_id', 'branch_id')));
+    }
 }
